@@ -587,6 +587,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b191cd8d49ad37d46b5c7910fa48757b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabMine: {fileID: 7627253191932847753, guid: 4e13cbb3748b65744b793e898801a832, type: 3}
-  nMinesAmount: 10
+  prefabMine: {fileID: 6901575899033605856, guid: 4e13cbb3748b65744b793e898801a832, type: 3}
+  nMinesAmount: 35
   mapHandler: {fileID: 524790613}

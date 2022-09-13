@@ -34,7 +34,7 @@ namespace PrimerParcial.Gameplay.Controllers
             GUIStyle style = new GUIStyle() { fontSize = 10 };
             foreach (MapNode node in map)
             {
-                Vector3 worldPosition = new Vector3(node.position.x /*- (mapSize.x * 0.5f)*/, node.position.y /*- (mapSize.y * 0.5f)*/, 0.0f);
+                Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f);
                 Gizmos.DrawWireSphere(worldPosition, 0.2f);
                 Handles.Label(worldPosition, node.position.ToString(), style);
             }
@@ -74,9 +74,14 @@ namespace PrimerParcial.Gameplay.Controllers
             mainCamera.transform.position = new Vector3((mapSize.x * 0.5f), (mapSize.y * 0.5f), -10);
         }
 
-        public MapNode GetRandomMapLocation()
+        public Vector2Int GetRandomMapPosition()
         {
-            return map[NodeUtils.PositionToIndex(new Vector2Int(Random.Range(0, mapSize.x), Random.Range(0, mapSize.y)))]; ;
+            return GetRandomMapNode().position;
+        }
+
+        public MapNode GetRandomMapNode()
+        {
+            return map[NodeUtils.PositionToIndex(new Vector2Int(Random.Range(0, mapSize.x), Random.Range(0, mapSize.y)))];
         }
         #endregion
     }
