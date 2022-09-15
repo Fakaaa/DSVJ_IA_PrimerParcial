@@ -13,11 +13,11 @@ namespace PrimerParcial.Gameplay.Controllers
         #region EXPOSED_FIELDS
         [SerializeField] private Vector2Int mapSize = default;
         [SerializeField] private Vector2Int destination = default;
+        [SerializeField] private MapNode[] map = null;
         #endregion
 
         #region PRIVATE_FIELDS
         private Camera mainCamera = null;
-        private MapNode[] map = null;
         private Pathfinding pathfinding = null;
         #endregion
 
@@ -74,9 +74,33 @@ namespace PrimerParcial.Gameplay.Controllers
             mainCamera.transform.position = new Vector3((mapSize.x * 0.5f), (mapSize.y * 0.5f), -10);
         }
 
+        public List<Vector2Int> GetPath(Vector2Int destination)
+        {
+            return pathfinding.GetPath(map,map[NodeUtils.PositionToIndex(new Vector2Int(0, 0))], map[NodeUtils.PositionToIndex(new Vector2Int(destination.x, destination.y))]);
+        }
+
         public Vector2Int GetRandomMapPosition()
         {
             return GetRandomMapNode().position;
+        }
+
+        public MapNode GetMapNodeFromPosition(Vector2Int position)
+        {
+            MapNode node = null;
+
+            for (int i = 0; i < map.Length; i++)
+            {
+                if (map[i] != null)
+                {
+                    if(map[i].position == position)
+                    {
+                        node = map[i];
+                        break;
+                    }
+                }
+            }
+
+            return node;
         }
 
         public MapNode GetRandomMapNode()

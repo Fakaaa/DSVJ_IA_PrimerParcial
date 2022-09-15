@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace PrimerParcial.Gameplay.Map.Data
 {
+    [Serializable]
     public class MapNode
     {
         #region ENUM

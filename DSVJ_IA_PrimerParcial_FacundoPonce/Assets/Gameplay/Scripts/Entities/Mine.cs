@@ -19,6 +19,11 @@ namespace PrimerParcial.Gameplay.Entities
         {
             this.assignedNode = assignedNode;
         }
+
+        public Vector2Int GetMinePosition()
+        {
+            return assignedNode.position;
+        }
         #endregion
     }
 }

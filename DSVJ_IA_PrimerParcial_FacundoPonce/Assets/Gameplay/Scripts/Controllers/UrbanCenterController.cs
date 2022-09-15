@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using PrimerParcial.Gameplay.Entities;
+using System.Linq;
+using UnityEditor.Experimental.GraphView;
+using PrimerParcial.Gameplay.Map.Data;
+using System.Collections;
 
 namespace PrimerParcial.Gameplay.Controllers
 {
     public class UrbanCenterController : MonoBehaviour
     {
         #region EXPOSED_FIELDS
+        [SerializeField] private GameObject miner = null;
         [SerializeField] private Mine prefabMine = null;
         [SerializeField] private int nMinesAmount = 10;
         [SerializeField] private MapController mapHandler = default;
@@ -16,7 +21,9 @@ namespace PrimerParcial.Gameplay.Controllers
 
         #region PRIVATE_FIELDS
         private List<Vector2Int> selectedPositions = new List<Vector2Int>();
-        private List<Mine> mines = new List<Mine>();
+        private List<Mine> mines = new List<Mine>(); 
+
+        private List<Vector2Int> minerPath = new List<Vector2Int>();
         #endregion
 
         #region UNITY_CALLS
@@ -35,20 +42,49 @@ namespace PrimerParcial.Gameplay.Controllers
 
                 } while (selectedPositions.Contains(randomPosition));
 
+                MapNode mineNode = mapHandler.GetMapNodeFromPosition(randomPosition);
+
                 selectedPositions.Add(randomPosition);
 
                 Mine mine = Instantiate(prefabMine, (Vector2)randomPosition, Quaternion.identity);
                 
                 if(!mines.Contains(mine))
                 {
+                    mine.Init(mineNode);
                     mines.Add(mine);
                 }
             }
+
+            minerPath = mapHandler.GetPath(mines[Random.Range(0, mines.Count)].GetMinePosition());
+
+
+            IEnumerator MoveMinerToDestination()
+            {
+                if (miner == null)
+                    yield break;
+
+                if (minerPath.Any())
+                {
+                    foreach (Vector2Int position in minerPath)
+                    {
+                        while (Vector2.Distance(miner.transform.position, position) > 0.15f)
+                        {
+                            miner.transform.position = Vector2.MoveTowards(miner.transform.position, position, 1.15f * Time.deltaTime);
+
+                            yield return new WaitForEndOfFrame();
+                        }
+                    }
+                }
+
+                yield break;
+            }
+
+            StartCoroutine(MoveMinerToDestination());
         }
 
         private void Update()
         {
-            
+
         }
         #endregion
     }
