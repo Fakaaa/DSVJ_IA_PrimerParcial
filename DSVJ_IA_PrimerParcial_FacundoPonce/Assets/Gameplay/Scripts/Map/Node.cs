@@ -8,18 +8,22 @@ public class Node
     private int hCost;
     private int fCost;
     private Node cameFromNode;
+
+    private bool isLocked = false; //This is like an obstacle.
     #endregion
 
     #region PROPERTIES
+    public bool IsLocked { get { return isLocked; } }
     public int GCost { get { return gCost; } }
     public int HCost { get { return hCost; } }
     public int FCost { get { return fCost; } }
     #endregion
 
     #region CONSTRUCTOR
-    public Node(Vector2Int cellPosition)
+    public Node(Vector2Int cellPosition, bool isLocked = false)
     {
         this.cellPosition = cellPosition;
+        this.isLocked = isLocked;
     }
     #endregion
 

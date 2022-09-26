@@ -33,6 +33,14 @@ namespace PrimerParcial.Gameplay.Controllers
             GUIStyle style = new GUIStyle() { fontSize = 10 };
             foreach (Node node in map)
             {
+                if(!node.IsLocked)
+                {
+                    Gizmos.color = Color.green;
+                }
+                else
+                {
+                    Gizmos.color = Color.red;
+                }
                 Vector3 worldPosition = new Vector3(node.GetCellPosition().x, node.GetCellPosition().y, 0.0f);
                 Gizmos.DrawWireSphere(worldPosition, 0.2f);
                 Handles.Label(worldPosition, node.GetCellPosition().ToString(), style);
@@ -49,7 +57,23 @@ namespace PrimerParcial.Gameplay.Controllers
             {
                 for (int j = 0; j < mapSize.x; j++)
                 {
-                    map.Add(new Node(new Vector2Int(j, i)));
+                    int randomChanceOfObstacle = Random.Range(0,100);
+
+                    if(randomChanceOfObstacle < 25)
+                    {
+                        if(map.Count > 1)
+                        {
+                            map.Add(new Node(new Vector2Int(j, i), true));
+                        }
+                        else
+                        {
+                            map.Add(new Node(new Vector2Int(j, i)));
+                        }
+                    }
+                    else
+                    {
+                        map.Add(new Node(new Vector2Int(j, i)));
+                    }
                 }
             }
 

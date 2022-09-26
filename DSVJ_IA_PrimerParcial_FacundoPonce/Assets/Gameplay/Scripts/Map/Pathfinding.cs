@@ -15,15 +15,24 @@ namespace PrimerParcial.Gameplay.Map.Handler
         {
             this.map = new List<Node>();
 
-            this.map.AddRange(map);
+            for (int i = 0; i < map.Count; i++)
+            {
+                if (map[i] != null)
+                {
+                    if(!map[i].IsLocked)
+                    {
+                        this.map.Add(map[i]);
+                    }
+                }
+            }
         }
         #endregion
 
         #region PUBLIC_METHODS
         public List<Vector2Int> GetPath(Vector2Int origin, Vector2Int destination)
         {
-            bool originLokated = false;
-            bool endLokated = false;
+            bool originLocated = false;
+            bool endLocated = false;
 
             Node originNode = null;
             Node destinationNode = null;
@@ -32,18 +41,18 @@ namespace PrimerParcial.Gameplay.Map.Handler
             {
                 if (map[i] != null)
                 {
-                    if (originLokated && endLokated)
+                    if (originLocated && endLocated)
                         break;
 
                     if (map[i].GetCellPosition() == origin)
                     {
                         originNode = map[i];
-                        originLokated = true;
+                        originLocated = true;
                     }
                     if(map[i].GetCellPosition() == destination)
                     {
                         destinationNode = map[i];
-                        endLokated = true;
+                        endLocated = true;
                     }
                 }
             }
