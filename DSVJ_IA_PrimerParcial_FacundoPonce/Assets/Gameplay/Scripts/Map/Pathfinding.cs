@@ -2,81 +2,179 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-using PrimerParcial.Gameplay.Map.Data;
-
 namespace PrimerParcial.Gameplay.Map.Handler
 {
     public class Pathfinding
     {
-        #region PUBLIC_METHODS
-        public List<Vector2Int> GetPath(MapNode[] map, MapNode origin, MapNode destination)
+        #region PRIVATE_FIELDS
+        private List<Node> map = new List<Node>();
+        #endregion
+
+        #region CONSTRUCTOR
+        public Pathfinding(List<Node> map)
         {
-            MapNode currentNode = origin;
-            while (currentNode.position != destination.position)
-            {
-                currentNode.state = MapNode.NodeState.Closed;
+            this.map = new List<Node>();
 
-                for (int i = 0; i < currentNode.adjacentNodeIDs.Count; i++)
-                {
-                    if (currentNode.adjacentNodeIDs[i] != -1)
-                    {
-                        if (map[currentNode.adjacentNodeIDs[i]].state == MapNode.NodeState.Ready)
-                        {
-                            map[currentNode.adjacentNodeIDs[i]].Open(currentNode.ID);
-                        }
-                    }
-                }
-
-                currentNode = GetNextNode(map, currentNode);
-                if (currentNode == null)
-                    return new List<Vector2Int>();
-            }
-
-            List<Vector2Int> path = GeneratePath(map, currentNode);
-            foreach (MapNode node in map)
-            {
-                node.Reset();
-            }
-            return path;
+            this.map.AddRange(map);
         }
         #endregion
 
-        #region PRIVATE_METHODS
-        private List<Vector2Int> GeneratePath(MapNode[] map, MapNode current)
+        #region PUBLIC_METHODS
+        public List<Vector2Int> GetPath(Vector2Int origin, Vector2Int destination)
         {
-            List<Vector2Int> path = new List<Vector2Int>();
+            bool originLokated = false;
+            bool endLokated = false;
 
-            while (current.openerID != -1)
+            Node originNode = null;
+            Node destinationNode = null;
+
+            for (int i = 0; i < map.Count; i++)
             {
-                path.Add(current.position);
-                current = map[current.openerID];
-            }
-
-            path.Reverse();
-
-            return path;
-        }
-
-        private MapNode GetNextNode(MapNode[] map, MapNode currentNode)
-        {
-            for (int i = 0; i < currentNode.adjacentNodeIDs.Count; i++)
-            {
-                if (currentNode.adjacentNodeIDs[i] != -1)
+                if (map[i] != null)
                 {
-                    if (map[currentNode.adjacentNodeIDs[i]].state == MapNode.NodeState.Open)
+                    if (originLokated && endLokated)
+                        break;
+
+                    if (map[i].GetCellPosition() == origin)
                     {
-                        if (map[currentNode.adjacentNodeIDs[i]].openerID == currentNode.ID)
-                        {
-                            return map[currentNode.adjacentNodeIDs[i]];
-                        }
+                        originNode = map[i];
+                        originLokated = true;
+                    }
+                    if(map[i].GetCellPosition() == destination)
+                    {
+                        destinationNode = map[i];
+                        endLokated = true;
                     }
                 }
             }
 
-            if (currentNode.openerID == -1)
-                return null;
+            List<Node> openList = new List<Node>() { originNode };
+            List<Node> closedList = new List<Node>();
 
-            return GetNextNode(map, map[currentNode.openerID]);
+            for (int i = 0; i < map.Count; i++)
+            {
+                if (map[i] != null)
+                {
+                    map[i].SetGCost(int.MaxValue);
+                    map[i].CalculateFCost();
+                    map[i].SetCameFromCell(null);
+                }
+            }
+
+            originNode.SetGCost(0);
+            originNode.SetHCost(CalculateDistanceCost(originNode, destinationNode));
+            originNode.CalculateFCost();
+
+            while(openList.Count > 0)
+            {
+                Node actualNode = GetLowestFCostNode(openList);
+
+                if (actualNode == destinationNode)
+                {
+                    return CalculatePath(destinationNode);
+                }
+
+                openList.Remove(actualNode);
+                closedList.Add(actualNode);
+
+                foreach (Node neighbourCell in GetNeighboursList(actualNode, map))
+                {
+                    if(closedList.Contains(neighbourCell))
+                    {
+                        continue;
+                    }
+
+                    int tentativeCost = actualNode.GCost + CalculateDistanceCost(actualNode, neighbourCell);
+                    if(tentativeCost < neighbourCell.GCost)
+                    {
+                        neighbourCell.SetCameFromCell(actualNode);
+                        neighbourCell.SetGCost(tentativeCost);
+                        neighbourCell.SetHCost(CalculateDistanceCost(neighbourCell, destinationNode));
+                        neighbourCell.CalculateFCost();
+                    }
+                    if(!openList.Contains(neighbourCell))
+                    {
+                        openList.Add(neighbourCell);
+                    }
+                }
+            }
+
+            //No encontro camino.
+            return null;
+        }        
+        #endregion
+
+        #region PRIVATE_METHODS
+        private int CalculateDistanceCost(Node actualNode, Node destination)
+        {
+            int diagonalCost = 14;
+            int straightCost = 10;
+
+            int xDistance = Mathf.Abs(actualNode.GetCellPosition().x - destination.GetCellPosition().x);
+            int yDistance = Mathf.Abs(actualNode.GetCellPosition().y - destination.GetCellPosition().y);
+            int remaining = Mathf.Abs(xDistance - yDistance);
+
+            return diagonalCost * Mathf.Min(xDistance, yDistance) + straightCost * remaining;
+        }
+
+        private Node GetLowestFCostNode(List<Node> openList)
+        {
+            Node nodeWithLowestCost = openList[0];
+            for (int i = 0; i < openList.Count; i++)
+            {
+                if (openList[i] != null)
+                {
+                    if(openList[i].FCost < nodeWithLowestCost.FCost)
+                    {
+                        nodeWithLowestCost = openList[i];
+                    }
+                }
+            }
+
+            return nodeWithLowestCost;
+        }
+        
+        private List<Node> GetNeighboursList(Node actualNode, List<Node> map)
+        {
+            List<Node> neighboursList = new List<Node>();
+
+            int x = actualNode.GetCellPosition().x;
+            int y = actualNode.GetCellPosition().y;
+
+            for (int i = 0; i < map.Count; i++)
+            {
+                if (map[i] != null)
+                {
+                    if( map[i].GetCellPosition() == new Vector2Int(x -1, y)||
+                        map[i].GetCellPosition() == new Vector2Int(x - 1, y - 1)||
+                        map[i].GetCellPosition() == new Vector2Int(x - 1, y + 1)||
+                        map[i].GetCellPosition() == new Vector2Int(x + 1, y)||
+                        map[i].GetCellPosition() == new Vector2Int(x + 1, y - 1)||
+                        map[i].GetCellPosition() == new Vector2Int(x + 1, y + 1)||
+                        map[i].GetCellPosition() == new Vector2Int(x, y - 1)||
+                        map[i].GetCellPosition() == new Vector2Int(x, y + 1))
+                    {
+                        neighboursList.Add(map[i]);
+                    }
+                }
+            }
+
+            return neighboursList;
+        }
+
+        private List<Vector2Int> CalculatePath(Node destinationNode)
+        {
+            List<Vector2Int> path = new List<Vector2Int>();
+            path.Add(destinationNode.GetCellPosition());
+            Node currentNode = destinationNode;
+
+            while (currentNode.GetCameFromNode() != null)
+            {
+                path.Add(currentNode.GetCameFromNode().GetCellPosition());
+                currentNode = currentNode.GetCameFromNode();
+            }
+            path.Reverse();
+            return path;
         }
         #endregion
     }

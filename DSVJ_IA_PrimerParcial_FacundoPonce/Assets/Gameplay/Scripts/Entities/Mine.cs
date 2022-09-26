@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using PrimerParcial.Gameplay.Map.Data;
-
 namespace PrimerParcial.Gameplay.Entities
 {
     public class Mine : MonoBehaviour
@@ -11,18 +9,18 @@ namespace PrimerParcial.Gameplay.Entities
         #endregion
 
         #region PRIVATE_FIELDS
-        private MapNode assignedNode = null;
+        private Node assignedNode = null;
         #endregion
 
         #region PUBLIC_METHODS
-        public void Init(MapNode assignedNode)
+        public void Init(Node assignedNode)
         {
             this.assignedNode = assignedNode;
         }
 
         public Vector2Int GetMinePosition()
         {
-            return assignedNode.position;
+            return assignedNode.GetCellPosition();
         }
         #endregion
     }

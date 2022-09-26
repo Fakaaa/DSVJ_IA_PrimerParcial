@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-using PrimerParcial.Gameplay.Map.Data;
 using PrimerParcial.Gameplay.Map.Handler;
 
 namespace PrimerParcial.Gameplay.Controllers
@@ -13,7 +12,7 @@ namespace PrimerParcial.Gameplay.Controllers
         #region EXPOSED_FIELDS
         [SerializeField] private Vector2Int mapSize = default;
         [SerializeField] private Vector2Int destination = default;
-        [SerializeField] private MapNode[] map = null;
+        [SerializeField] private List<Node> map = new List<Node>();
         #endregion
 
         #region PRIVATE_FIELDS
@@ -32,11 +31,11 @@ namespace PrimerParcial.Gameplay.Controllers
                 return;
             Gizmos.color = Color.green;
             GUIStyle style = new GUIStyle() { fontSize = 10 };
-            foreach (MapNode node in map)
+            foreach (Node node in map)
             {
-                Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f);
+                Vector3 worldPosition = new Vector3(node.GetCellPosition().x, node.GetCellPosition().y, 0.0f);
                 Gizmos.DrawWireSphere(worldPosition, 0.2f);
-                Handles.Label(worldPosition, node.position.ToString(), style);
+                Handles.Label(worldPosition, node.GetCellPosition().ToString(), style);
             }
         }
         #endregion
@@ -44,22 +43,22 @@ namespace PrimerParcial.Gameplay.Controllers
         #region PUBLIC_METHODS
         public void Init()
         {
-            pathfinding = new Pathfinding();
-            NodeUtils.MapSize = mapSize;
-            map = new MapNode[mapSize.x * mapSize.y];
-            int ID = 0;
+            map = new List<Node>();
+
             for (int i = 0; i < mapSize.y; i++)
             {
                 for (int j = 0; j < mapSize.x; j++)
                 {
-                    map[ID] = new MapNode(ID, new Vector2Int(j, i));
-                    ID++;
+                    map.Add(new Node(new Vector2Int(j, i)));
                 }
             }
 
-            List<Vector2Int> path = pathfinding.GetPath(map,
-                map[NodeUtils.PositionToIndex(new Vector2Int(0, 0))],
-                map[NodeUtils.PositionToIndex(new Vector2Int(destination.x, destination.y))]);
+            pathfinding = new Pathfinding(map);
+
+            Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(0, 0));
+            Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
+
+            List<Vector2Int> path = pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
 
             for (int i = 0; i < path.Count; i++)
             {
@@ -76,36 +75,27 @@ namespace PrimerParcial.Gameplay.Controllers
 
         public List<Vector2Int> GetPath(Vector2Int destination)
         {
-            return pathfinding.GetPath(map,map[NodeUtils.PositionToIndex(new Vector2Int(0, 0))], map[NodeUtils.PositionToIndex(new Vector2Int(destination.x, destination.y))]);
+            Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(0, 0));
+            Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
+
+            return pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
         }
 
         public Vector2Int GetRandomMapPosition()
         {
-            return GetRandomMapNode().position;
+            return GetRandomMapNode().GetCellPosition();
         }
 
-        public MapNode GetMapNodeFromPosition(Vector2Int position)
+        public Node GetMapNodeFromPosition(Vector2Int position)
         {
-            MapNode node = null;
-
-            for (int i = 0; i < map.Length; i++)
-            {
-                if (map[i] != null)
-                {
-                    if(map[i].position == position)
-                    {
-                        node = map[i];
-                        break;
-                    }
-                }
-            }
-
-            return node;
+            return map.Find(node => node.GetCellPosition() == position);
         }
 
-        public MapNode GetRandomMapNode()
+        public Node GetRandomMapNode()
         {
-            return map[NodeUtils.PositionToIndex(new Vector2Int(Random.Range(0, mapSize.x), Random.Range(0, mapSize.y)))];
+            Vector2Int randomPosition = new Vector2Int(Random.Range(0, mapSize.x), Random.Range(0, mapSize.y));
+
+            return GetMapNodeFromPosition(randomPosition);
         }
         #endregion
     }

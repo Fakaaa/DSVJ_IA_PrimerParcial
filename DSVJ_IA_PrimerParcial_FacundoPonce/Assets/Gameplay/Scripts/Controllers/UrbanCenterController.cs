@@ -1,12 +1,10 @@
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
 
 using PrimerParcial.Gameplay.Entities;
-using System.Linq;
-using UnityEditor.Experimental.GraphView;
-using PrimerParcial.Gameplay.Map.Data;
-using System.Collections;
 
 namespace PrimerParcial.Gameplay.Controllers
 {
@@ -42,7 +40,7 @@ namespace PrimerParcial.Gameplay.Controllers
 
                 } while (selectedPositions.Contains(randomPosition));
 
-                MapNode mineNode = mapHandler.GetMapNodeFromPosition(randomPosition);
+                Node mineNode = mapHandler.GetMapNodeFromPosition(randomPosition);
 
                 selectedPositions.Add(randomPosition);
 
