@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace PrimerParcial.Gameplay.Map.Handler
 {
+    [System.Serializable]
     public class Pathfinding
     {
         #region PRIVATE_FIELDS
@@ -55,6 +56,12 @@ namespace PrimerParcial.Gameplay.Map.Handler
                         endLocated = true;
                     }
                 }
+            }
+
+            if (!originLocated || !endLocated)
+            {
+                Debug.Log("ORIGIN OR END NOT LOCATED");
+                return null;
             }
 
             List<Node> openList = new List<Node>() { originNode };
@@ -119,10 +126,6 @@ namespace PrimerParcial.Gameplay.Map.Handler
             int diagonalCost = 14;
             int straightCost = 10;
             
-            if(actualNode == null || destination == null)
-            {
-                return diagonalCost + straightCost;
-            }
             int xDistance = Mathf.Abs(actualNode.GetCellPosition().x - destination.GetCellPosition().x);
             int yDistance = Mathf.Abs(actualNode.GetCellPosition().y - destination.GetCellPosition().y);
             int remaining = Mathf.Abs(xDistance - yDistance);

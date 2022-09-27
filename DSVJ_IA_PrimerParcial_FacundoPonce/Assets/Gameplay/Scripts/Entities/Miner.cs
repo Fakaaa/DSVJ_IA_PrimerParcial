@@ -7,6 +7,7 @@ using UnityEngine;
 
 using PrimerParcial.Gameplay.Entities.Agent;
 using PrimerParcial.Gameplay.Entities;
+using PrimerParcial.Gameplay.Controllers;
 
 public class Miner : MonoBehaviour
 {
@@ -37,11 +38,14 @@ public class Miner : MonoBehaviour
     #endregion
 
     #region PRIVATE_FIELDS
+    private float timeUntilGoUrbanCenter = 4f;
+    private float timer = 0f;
+
     private AgentFSM minerBehaviour = null;
 
     private bool isGoingToTarget = false;
 
-    private GameObject urbanCenter = null;
+    private UrbanCenter urbanCenter = null;
 
     private Mine actualTargetMine = null;
 
@@ -53,11 +57,11 @@ public class Miner : MonoBehaviour
     #endregion
 
     #region PROPERTIES
-    public Func<Vector2Int, Vector2Int ,List<Vector2Int>> OnGetPathToMine { get { return onGetPathToMine; } set { onGetPathToMine = value; } }
+    public Func<Vector2Int, Vector2Int ,List<Vector2Int>> OnGetPathOnMap { get { return onGetPathToMine; } set { onGetPathToMine = value; } }
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(List<Mine> minesOnMap, GameObject urbanCenter)
+    public void Init(List<Mine> minesOnMap, UrbanCenter urbanCenter)
 	{
         this.urbanCenter = urbanCenter;
 
@@ -140,6 +144,16 @@ public class Miner : MonoBehaviour
         isGoingToTarget = false;
         minerAnim.SetBool("IsMoving", false);
         minerAnim.SetBool("IsMining", true);
+
+        if(timer < timeUntilGoUrbanCenter)
+        {
+            timer += Time.deltaTime;
+        }
+        else
+        {
+            timer = 0f;
+            minerBehaviour.SetFlag((int)Flags.OnFullInventory);
+        }
     }
 
     private void GoToMine()
@@ -152,15 +166,20 @@ public class Miner : MonoBehaviour
         minerAnim.SetBool("IsMining", false);
         minerAnim.SetBool("IsMoving", true);
 
-        minerPath.Clear();
+        if(minerPath != null)
+        {
+            minerPath.Clear();
+        }
 
         FindClosestMine();
 
-        minerPath = OnGetPathToMine?.Invoke(Vector2Int.RoundToInt(transform.position), actualTargetMine.GetMinePosition());
+        Debug.Log("GIVE ME A PATH");
+        minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), actualTargetMine.GetMinePosition());
 
-        StartCoroutine(MoveMinerToDestination());
-
-        isGoingToTarget = true;
+        StartCoroutine(MoveMinerToDestination(() => 
+        {
+            minerBehaviour.SetFlag((int)Flags.OnReachMine);
+        }));
     }
 
     private void GoToUrbanCenter()
@@ -173,27 +192,32 @@ public class Miner : MonoBehaviour
         minerAnim.SetBool("IsMining", false);
         minerAnim.SetBool("IsMoving", true);
 
-        minerPath.Clear();
+        if (minerPath != null)
+        {
+            minerPath.Clear();
+        }
 
-        FindClosestMine();
+        Debug.Log("GIVE ME A PATH");
+        minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), urbanCenter.attachedNode.GetCellPosition());
 
-        minerPath = OnGetPathToMine?.Invoke(Vector2Int.RoundToInt(transform.position), actualTargetMine.GetMinePosition());
-
-        StartCoroutine(MoveMinerToDestination());
-
-        isGoingToTarget = true;
+        StartCoroutine(MoveMinerToDestination(() => 
+        {
+            minerBehaviour.SetFlag((int)Flags.OnReachUrbanCenter);
+        }));
     }
     #endregion
 
     #endregion
 
     #region CORUTINES
-    IEnumerator MoveMinerToDestination()
+    IEnumerator MoveMinerToDestination(Action onReachDestination = null)
     {
         if(minerPath == null)
         {
             yield break;
         }
+
+        isGoingToTarget = true;
 
         if (minerPath.Any())
         {
@@ -208,7 +232,8 @@ public class Miner : MonoBehaviour
             }
         }
 
-        minerBehaviour.SetFlag((int)Flags.OnReachMine);
+        onReachDestination?.Invoke();
+        isGoingToTarget = false;
 
         yield break;
     }

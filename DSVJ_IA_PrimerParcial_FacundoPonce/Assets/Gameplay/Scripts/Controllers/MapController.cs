@@ -13,14 +13,17 @@ namespace PrimerParcial.Gameplay.Controllers
         [SerializeField] private Vector2Int mapSize = default;
         [SerializeField] private Vector2Int destination = default;
         [SerializeField] private List<Node> map = new List<Node>();
+        [SerializeField] private Pathfinding pathfinding = null;
         #endregion
 
         #region PRIVATE_FIELDS
         private Camera mainCamera = null;
-        private Pathfinding pathfinding = null;
+
+        private bool mapInitialized = false;
         #endregion
 
         #region PROPERTIES
+        public List<Node> Map { get { return map; } }  
         public Vector2Int MapSize { get => mapSize; }
         #endregion
 
@@ -98,10 +101,18 @@ namespace PrimerParcial.Gameplay.Controllers
             }
 
             mainCamera.transform.position = new Vector3((mapSize.x * 0.5f), (mapSize.y * 0.5f), -10);
+
+            mapInitialized = true;
         }
 
         public List<Vector2Int> GetPath(Vector2Int origin, Vector2Int destination)
         {
+            if(!mapInitialized)
+            {
+                return null;
+            }
+            Debug.Log("GIVE ME A PATH, MAP CONTROLLER");
+
             Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(origin.x, origin.y));
             Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
 

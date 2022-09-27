@@ -20,7 +20,9 @@ namespace PrimerParcial.Gameplay.Controllers
 
         #region PRIVATE_FIELDS
         private List<Vector2Int> selectedPositions = new List<Vector2Int>();
-        private List<Mine> mines = new List<Mine>(); 
+        private List<Mine> mines = new List<Mine>();
+
+        private UrbanCenter urbanCenter = null;
 
         private List<Vector2Int> minerPath = new List<Vector2Int>();
         #endregion
@@ -56,33 +58,26 @@ namespace PrimerParcial.Gameplay.Controllers
                 }
             }
 
-            //minerPath = mapHandler.GetPath(mines[Random.Range(0, mines.Count)].GetMinePosition());
+            Node nearestNodes = null;
 
-            miner.OnGetPathToMine += mapHandler.GetPath;
-
-            miner.Init(mines, gameObject);
-            /*IEnumerator MoveMinerToDestination()
+            for (int i = 0; i < mapHandler.Map.Count; i++)
             {
-                if (miner == null)
-                    yield break;
-
-                if (minerPath.Any())
+                if (mapHandler.Map[i] != null)
                 {
-                    foreach (Vector2Int position in minerPath)
+                    if (Mathf.Abs(Vector2Int.Distance(Vector2Int.RoundToInt(transform.position), mapHandler.Map[i].GetCellPosition())) < 0.25f)
                     {
-                        while (Vector2.Distance(miner.transform.position, position) > 0.15f)
-                        {
-                            miner.transform.position = Vector2.MoveTowards(miner.transform.position, position, 1.15f * Time.deltaTime);
-
-                            yield return new WaitForEndOfFrame();
-                        }
+                        nearestNodes = mapHandler.Map[i];
                     }
                 }
-
-                yield break;
             }
 
-            StartCoroutine(MoveMinerToDestination());*/
+            transform.position = new Vector2(nearestNodes.GetCellPosition().x, nearestNodes.GetCellPosition().y);
+            nearestNodes.SetLocked(false);
+            urbanCenter = new UrbanCenter(nearestNodes);
+
+            miner.OnGetPathOnMap += mapHandler.GetPath;
+
+            miner.Init(mines, urbanCenter);
         }
 
         private void Update()
@@ -90,5 +85,15 @@ namespace PrimerParcial.Gameplay.Controllers
             miner.UpdateMiner();
         }
         #endregion
+    }
+
+    public class UrbanCenter
+    {
+        public Node attachedNode = null;
+
+        public UrbanCenter(Node node)
+        {
+            attachedNode = node;
+        }
     }
 }
