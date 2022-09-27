@@ -695,6 +695,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0c0f13928c605a4eb3671de78d56dce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minerAnim: {fileID: 369912724747000100}
 --- !u!1 &369912725585888594
 GameObject:
   m_ObjectHideFlags: 0

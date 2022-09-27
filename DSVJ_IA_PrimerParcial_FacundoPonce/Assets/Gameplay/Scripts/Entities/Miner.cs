@@ -85,6 +85,23 @@ public class Miner : MonoBehaviour
     {
         minerBehaviour.Update();
     }
+
+    public void ToggleBehaviour()
+    {
+        minerBehaviour.ToggleBehaviour(true);
+    }
+
+    public void DestroyMiner()
+    {
+        minerBehaviour.ToggleBehaviour(false);
+
+        if(minerPath != null)
+        {
+            minerPath.Clear();
+        }
+
+        Destroy(gameObject, 0.15f);
+    }
     #endregion
 
     #region PRIVATE_METHODS

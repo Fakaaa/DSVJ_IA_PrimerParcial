@@ -6,6 +6,7 @@ namespace PrimerParcial.Gameplay.Entities.Agent
     [Serializable]
     public class AgentFSM
     {
+        private bool isEnable = false;
         private int currentState;
         private int[,] relations;
         private Dictionary<int, List<Action>> behaviours;
@@ -20,6 +21,11 @@ namespace PrimerParcial.Gameplay.Entities.Agent
                     relations[i, j] = -1;
 
             behaviours = new Dictionary<int, List<Action>>();
+        }
+
+        public void ToggleBehaviour(bool state)
+        {
+            isEnable = state;
         }
 
         public void ForceCurretState(int state)
@@ -69,6 +75,11 @@ namespace PrimerParcial.Gameplay.Entities.Agent
 
         public void Update()
         {
+            if(!isEnable)
+            {
+                return;
+            }
+
             if (behaviours.ContainsKey(currentState))
             {
                 List<Action> actions = behaviours[currentState];
