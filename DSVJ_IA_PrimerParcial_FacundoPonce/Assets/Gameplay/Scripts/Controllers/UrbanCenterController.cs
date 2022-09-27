@@ -11,7 +11,8 @@ namespace PrimerParcial.Gameplay.Controllers
     public class UrbanCenterController : MonoBehaviour
     {
         #region EXPOSED_FIELDS
-        [SerializeField] private GameObject miner = null;
+        [SerializeField] private Miner miner = null;
+        [SerializeField] private GameObject prefabMiner = null;
         [SerializeField] private Mine prefabMine = null;
         [SerializeField] private int nMinesAmount = 10;
         [SerializeField] private MapController mapHandler = default;
@@ -44,6 +45,8 @@ namespace PrimerParcial.Gameplay.Controllers
 
                 selectedPositions.Add(randomPosition);
 
+                mineNode.SetLocked(false);
+
                 Mine mine = Instantiate(prefabMine, (Vector2)randomPosition, Quaternion.identity);
                 
                 if(!mines.Contains(mine))
@@ -53,10 +56,12 @@ namespace PrimerParcial.Gameplay.Controllers
                 }
             }
 
-            minerPath = mapHandler.GetPath(mines[Random.Range(0, mines.Count)].GetMinePosition());
+            //minerPath = mapHandler.GetPath(mines[Random.Range(0, mines.Count)].GetMinePosition());
 
+            miner.OnGetPathToMine += mapHandler.GetPath;
 
-            IEnumerator MoveMinerToDestination()
+            miner.Init(mines, gameObject);
+            /*IEnumerator MoveMinerToDestination()
             {
                 if (miner == null)
                     yield break;
@@ -77,12 +82,12 @@ namespace PrimerParcial.Gameplay.Controllers
                 yield break;
             }
 
-            StartCoroutine(MoveMinerToDestination());
+            StartCoroutine(MoveMinerToDestination());*/
         }
 
         private void Update()
         {
-
+            miner.UpdateMiner();
         }
         #endregion
     }

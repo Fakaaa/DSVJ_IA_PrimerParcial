@@ -118,7 +118,11 @@ namespace PrimerParcial.Gameplay.Map.Handler
         {
             int diagonalCost = 14;
             int straightCost = 10;
-
+            
+            if(actualNode == null || destination == null)
+            {
+                return diagonalCost + straightCost;
+            }
             int xDistance = Mathf.Abs(actualNode.GetCellPosition().x - destination.GetCellPosition().x);
             int yDistance = Mathf.Abs(actualNode.GetCellPosition().y - destination.GetCellPosition().y);
             int remaining = Mathf.Abs(xDistance - yDistance);

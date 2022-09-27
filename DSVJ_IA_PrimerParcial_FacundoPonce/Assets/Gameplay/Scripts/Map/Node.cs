@@ -33,6 +33,11 @@ public class Node
         return cellPosition;
     }
 
+    public void SetLocked(bool isLocked)
+    {
+        this.isLocked = isLocked;
+    }
+
     public void SetGCost(int value)
     {
         gCost = value;

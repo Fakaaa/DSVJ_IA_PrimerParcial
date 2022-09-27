@@ -648,11 +648,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Agent-Miner
       objectReference: {fileID: 0}
+    - target: {fileID: 3326257238952187091, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
+      propertyPath: minerAnim
+      value: 
+      objectReference: {fileID: 1240326289}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
---- !u!1 &994152543 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 369912725359728412, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
+--- !u!114 &994152544 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3326257238952187091, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
+  m_PrefabInstance: {fileID: 994152542}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c0f13928c605a4eb3671de78d56dce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!95 &1240326289 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 369912724747000100, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
   m_PrefabInstance: {fileID: 994152542}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1266124293
@@ -814,7 +829,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b191cd8d49ad37d46b5c7910fa48757b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  miner: {fileID: 994152543}
+  miner: {fileID: 994152544}
+  prefabMiner: {fileID: 369912725359728412, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
   prefabMine: {fileID: 6901575899033605856, guid: 4e13cbb3748b65744b793e898801a832, type: 3}
-  nMinesAmount: 35
+  nMinesAmount: 2
   mapHandler: {fileID: 524790613}

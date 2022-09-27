@@ -82,12 +82,15 @@ namespace PrimerParcial.Gameplay.Controllers
             Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(0, 0));
             Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
 
-            List<Vector2Int> path = pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
+            originNode.SetLocked(false);
+            destinationNode.SetLocked(false);
 
-            for (int i = 0; i < path.Count; i++)
-            {
-                Debug.Log(path[i]);
-            }
+            //List<Vector2Int> path = pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
+            //
+            //for (int i = 0; i < path.Count; i++)
+            //{
+            //    Debug.Log(path[i]);
+            //}
 
             if (mainCamera == null)
             {
@@ -97,9 +100,9 @@ namespace PrimerParcial.Gameplay.Controllers
             mainCamera.transform.position = new Vector3((mapSize.x * 0.5f), (mapSize.y * 0.5f), -10);
         }
 
-        public List<Vector2Int> GetPath(Vector2Int destination)
+        public List<Vector2Int> GetPath(Vector2Int origin, Vector2Int destination)
         {
-            Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(0, 0));
+            Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(origin.x, origin.y));
             Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
 
             return pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
