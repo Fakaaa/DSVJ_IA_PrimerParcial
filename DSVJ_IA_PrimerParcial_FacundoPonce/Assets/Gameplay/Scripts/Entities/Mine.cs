@@ -20,6 +20,7 @@ namespace PrimerParcial.Gameplay.Entities
         #endregion
 
         #region PROPERTIES
+        public Vector2Int Position { get { return assignedNode.GetCellPosition(); } }
         public bool IsEmpty { get { return amountOre <= 0; } }
         #endregion
 

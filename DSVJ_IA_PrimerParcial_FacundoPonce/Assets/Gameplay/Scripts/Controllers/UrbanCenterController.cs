@@ -87,6 +87,7 @@ namespace PrimerParcial.Gameplay.Controllers
         #endregion
 
         #region PRIVATE_METHODS
+
         private void CreateNewMiner()
         {
             int randomIndex = Random.Range(0, mapHandler.WalkeableMap.Count);
