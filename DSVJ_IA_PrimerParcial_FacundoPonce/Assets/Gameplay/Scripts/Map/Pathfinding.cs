@@ -11,6 +11,10 @@ namespace PrimerParcial.Gameplay.Map.Handler
         private List<Node> map = new List<Node>();
         #endregion
 
+        #region PROPERTIES
+        public List<Node> Map { get { return map; } }
+        #endregion
+
         #region CONSTRUCTOR
         public Pathfinding(List<Node> map)
         {

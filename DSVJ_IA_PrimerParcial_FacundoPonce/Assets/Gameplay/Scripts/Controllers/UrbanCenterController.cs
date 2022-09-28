@@ -30,30 +30,18 @@ namespace PrimerParcial.Gameplay.Controllers
         #region UNITY_CALLS
         private void Start()
         {
-            mapHandler.Init();
+            transform.position = new Vector3((mapHandler.MapSize.x * 0.5f), (mapHandler.MapSize.y * 0.5f), 0.0f);
+            Vector2Int urbanCenterPos = Vector2Int.RoundToInt(transform.position);
+            
+            mapHandler.Init(urbanCenterPos);
 
             uiController.ConfigureMinerOptions(CreateNewMiner, EnableAllMiners, RemoveMiner, ClearAllMiners);
-
-            transform.position = new Vector3((mapHandler.MapSize.x * 0.5f), (mapHandler.MapSize.y * 0.5f), 0.0f);
             
-            Node nearestNodes = null;
+            Node urbanCenterNode = mapHandler.WalkeableMap.Find(node=> node.GetCellPosition() == urbanCenterPos);
+            transform.position = new Vector2(urbanCenterPos.x, urbanCenterPos.y);
+            urbanCenter = new UrbanCenter(urbanCenterNode);
 
-            for (int i = 0; i < mapHandler.Map.Count; i++)
-            {
-                if (mapHandler.Map[i] != null)
-                {
-                    if (Mathf.Abs(Vector2Int.Distance(Vector2Int.RoundToInt(transform.position), mapHandler.Map[i].GetCellPosition())) < 0.25f)
-                    {
-                        nearestNodes = mapHandler.Map[i];
-                    }
-                }
-            }
-
-            transform.position = new Vector2(nearestNodes.GetCellPosition().x, nearestNodes.GetCellPosition().y);
-            nearestNodes.SetLocked(false);
-            urbanCenter = new UrbanCenter(nearestNodes);
-
-            selectedPositions.Add(nearestNodes.GetCellPosition());
+            selectedPositions.Add(urbanCenterNode.GetCellPosition());
 
             for (int i = 0; i < nMinesAmount; i++)
             {
@@ -100,10 +88,9 @@ namespace PrimerParcial.Gameplay.Controllers
         #region PRIVATE_METHODS
         private void CreateNewMiner()
         {
-            List<Node> freeNodes = mapHandler.Map.FindAll(node=> !node.IsLocked);
-            int randomIndex = Random.Range(0, freeNodes.Count);
+            int randomIndex = Random.Range(0, mapHandler.WalkeableMap.Count);
 
-            Node whereSpawnMiner = freeNodes[randomIndex];
+            Node whereSpawnMiner = mapHandler.WalkeableMap[randomIndex];
 
             Miner newMiner = Instantiate(prefabMiner, new Vector2(whereSpawnMiner.GetCellPosition().x, whereSpawnMiner.GetCellPosition().y), Quaternion.identity);
 
@@ -153,6 +140,7 @@ namespace PrimerParcial.Gameplay.Controllers
         #endregion
     }
 
+    [System.Serializable]
     public class UrbanCenter
     {
         public Node attachedNode = null;

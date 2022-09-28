@@ -6,11 +6,18 @@ namespace PrimerParcial.Gameplay.Entities.Agent
     [Serializable]
     public class AgentFSM
     {
+        #region PRIVATE_FIELDS
         private bool isEnable = false;
         private int currentState;
         private int[,] relations;
         private Dictionary<int, List<Action>> behaviours;
+        #endregion
 
+        #region PROPERTIES
+        public bool IsEnable { get { return isEnable; } }
+        #endregion
+
+        #region PUBLIC_METHODS
         public AgentFSM(int states, int flags)
         {
             currentState = -1;
@@ -95,5 +102,6 @@ namespace PrimerParcial.Gameplay.Entities.Agent
                 }
             }
         }
+        #endregion
     }
 }

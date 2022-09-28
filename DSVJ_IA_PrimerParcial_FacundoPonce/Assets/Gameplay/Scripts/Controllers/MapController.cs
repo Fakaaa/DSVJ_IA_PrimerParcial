@@ -10,9 +10,11 @@ namespace PrimerParcial.Gameplay.Controllers
     public class MapController : MonoBehaviour
     {
         #region EXPOSED_FIELDS
+        [SerializeField] private Sprite walkeableTile = null;
+        [SerializeField] private Sprite blockedTile = null;
+        [SerializeField] private SpriteRenderer prefabTile = null;
         [SerializeField] private Vector2Int mapSize = default;
-        [SerializeField] private Vector2Int destination = default;
-        [SerializeField] private List<Node> map = new List<Node>();
+        [SerializeField] private List<Node> allMap = new List<Node>();
         [SerializeField] private Pathfinding pathfinding = null;
         #endregion
 
@@ -23,18 +25,18 @@ namespace PrimerParcial.Gameplay.Controllers
         #endregion
 
         #region PROPERTIES
-        public List<Node> Map { get { return map; } }  
+        public List<Node> WalkeableMap { get { return pathfinding.Map; } }  
         public Vector2Int MapSize { get => mapSize; }
         #endregion
 
         #region UNITY_CALLS
         private void OnDrawGizmos()
         {
-            if (map == null)
+            if (allMap == null)
                 return;
             Gizmos.color = Color.green;
             GUIStyle style = new GUIStyle() { fontSize = 10 };
-            foreach (Node node in map)
+            foreach (Node node in allMap)
             {
                 if(!node.IsLocked)
                 {
@@ -52,48 +54,49 @@ namespace PrimerParcial.Gameplay.Controllers
         #endregion
 
         #region PUBLIC_METHODS
-        public void Init()
+        public void Init(Vector2Int urbanCenterNode)
         {
-            map = new List<Node>();
-
+            allMap = new List<Node>();
+            
             for (int i = 0; i < mapSize.y; i++)
             {
                 for (int j = 0; j < mapSize.x; j++)
                 {
                     int randomChanceOfObstacle = Random.Range(0,100);
+                    
+                    SpriteRenderer newTile = Instantiate(prefabTile, new Vector2(j, i), Quaternion.identity);
 
                     if(randomChanceOfObstacle < 25)
                     {
-                        if(map.Count > 1)
+                        if(allMap.Count > 1 && new Vector2Int(j, i) != urbanCenterNode)
                         {
-                            map.Add(new Node(new Vector2Int(j, i), true));
+                            allMap.Add(new Node(new Vector2Int(j, i), true));
+
+                            SpriteRenderer underTile = Instantiate(prefabTile, new Vector2(j, i), Quaternion.identity);
+                            underTile.sprite = walkeableTile;
+                            underTile.sortingOrder = 0;
+
+                            newTile.sprite = blockedTile;
+                            newTile.sortingOrder = 2;
                         }
                         else
                         {
-                            map.Add(new Node(new Vector2Int(j, i)));
+                            allMap.Add(new Node(new Vector2Int(j, i)));
+                            newTile.sprite = walkeableTile;
                         }
                     }
                     else
                     {
-                        map.Add(new Node(new Vector2Int(j, i)));
+                        allMap.Add(new Node(new Vector2Int(j, i)));
+                        newTile.sprite = walkeableTile;
                     }
                 }
             }
 
-            pathfinding = new Pathfinding(map);
+            Node urbanCenter = allMap.Find(node => node.GetCellPosition() == urbanCenterNode);
+            urbanCenter.SetLocked(false);
 
-            Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(0, 0));
-            Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
-
-            originNode.SetLocked(false);
-            destinationNode.SetLocked(false);
-
-            //List<Vector2Int> path = pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
-            //
-            //for (int i = 0; i < path.Count; i++)
-            //{
-            //    Debug.Log(path[i]);
-            //}
+            pathfinding = new Pathfinding(allMap);
 
             if (mainCamera == null)
             {
@@ -113,8 +116,8 @@ namespace PrimerParcial.Gameplay.Controllers
             }
             Debug.Log("GIVE ME A PATH, MAP CONTROLLER");
 
-            Node originNode = map.Find(node => node.GetCellPosition() == new Vector2Int(origin.x, origin.y));
-            Node destinationNode = map.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
+            Node originNode = WalkeableMap.Find(node => node.GetCellPosition() == new Vector2Int(origin.x, origin.y));
+            Node destinationNode = WalkeableMap.Find(node => node.GetCellPosition() == new Vector2Int(destination.x, destination.y));
 
             return pathfinding.GetPath(originNode.GetCellPosition(), destinationNode.GetCellPosition());
         }
@@ -126,12 +129,13 @@ namespace PrimerParcial.Gameplay.Controllers
 
         public Node GetMapNodeFromPosition(Vector2Int position)
         {
-            return map.Find(node => node.GetCellPosition() == position);
+            return WalkeableMap.Find(node => node.GetCellPosition() == position);
         }
 
         public Node GetRandomMapNode()
         {
-            Vector2Int randomPosition = new Vector2Int(Random.Range(0, mapSize.x), Random.Range(0, mapSize.y));
+            int randomIndex = Random.Range(0, WalkeableMap.Count);
+            Vector2Int randomPosition = WalkeableMap[randomIndex].GetCellPosition();
 
             return GetMapNodeFromPosition(randomPosition);
         }

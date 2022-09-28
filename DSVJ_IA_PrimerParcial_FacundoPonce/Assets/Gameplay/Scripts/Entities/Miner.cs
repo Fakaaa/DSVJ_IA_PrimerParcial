@@ -127,6 +127,10 @@ public class Miner : MonoBehaviour
     #region MINER_UTILS
     private void FindClosestMine()
     {
+        if(actualTargetMine != null)
+        {
+            return;
+        }
         //This will make the Thiessen calc to find the nearest mine, but for now i will do something easy.
 
         Mine closestMine = allMinesOnMap[0];
@@ -234,12 +238,22 @@ public class Miner : MonoBehaviour
             yield break;
         }
 
+        if (!minerBehaviour.IsEnable)
+        {
+            yield break;
+        }
+
         isGoingToTarget = true;
 
         if (minerPath.Any())
         {
             foreach (Vector2Int position in minerPath)
             {
+                if(!minerBehaviour.IsEnable)
+                {
+                    yield break;
+                }
+
                 while (Vector2.Distance(transform.position, position) > 0.15f)
                 {
                     transform.position = Vector2.MoveTowards(transform.position, position, 1.15f * Time.deltaTime);

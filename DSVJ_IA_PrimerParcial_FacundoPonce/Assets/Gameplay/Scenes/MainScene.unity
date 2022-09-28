@@ -831,9 +831,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67f79aebbef860248b6646398258bd6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  walkeableTile: {fileID: 332668574, guid: d5ab611fecced0f4db63574e7c574e3c, type: 3}
+  blockedTile: {fileID: 1379500700, guid: d5ab611fecced0f4db63574e7c574e3c, type: 3}
+  prefabTile: {fileID: 5433716689619696478, guid: c8ff593179d736946ae0c304b7716b8b, type: 3}
   mapSize: {x: 17, y: 17}
-  destination: {x: 2, y: 2}
-  map: []
+  allMap: []
+  mapView: []
 --- !u!1 &550557196
 GameObject:
   m_ObjectHideFlags: 0
