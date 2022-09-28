@@ -13,6 +13,7 @@ namespace PrimerParcial.Gameplay.Controllers
         #region EXPOSED_FIELDS
         [SerializeField] private Miner prefabMiner = null;
         [SerializeField] private Mine prefabMine = null;
+        [SerializeField] private int amountOrePerMine = 50;
         [SerializeField] private int nMinesAmount = 10;
         [SerializeField] private MapController mapHandler = default;
         [SerializeField] private UIController uiController = null;
@@ -62,7 +63,7 @@ namespace PrimerParcial.Gameplay.Controllers
                 
                 if(!mines.Contains(mine))
                 {
-                    mine.Init(mineNode);
+                    mine.Init(mineNode, amountOrePerMine);
                     mines.Add(mine);
                 }
             } 

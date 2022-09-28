@@ -8,6 +8,7 @@ using UnityEngine;
 using PrimerParcial.Gameplay.Entities.Agent;
 using PrimerParcial.Gameplay.Entities;
 using PrimerParcial.Gameplay.Controllers;
+using PrimerParcial.Gameplay.Interfaces;
 
 public class Miner : MonoBehaviour
 {
@@ -95,6 +96,8 @@ public class Miner : MonoBehaviour
     {
         minerBehaviour.ToggleBehaviour(false);
 
+        StopAllCoroutines();
+
         if(minerPath != null)
         {
             minerPath.Clear();
@@ -169,6 +172,25 @@ public class Miner : MonoBehaviour
         if(timer < timeUntilGoUrbanCenter)
         {
             timer += Time.deltaTime;
+
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,2f);
+
+            foreach (Collider2D hit in hits)
+            {
+                if(hit.TryGetComponent(out IMinable mine))
+                {
+                    if(mine.OnMine(UnityEngine.Random.Range(2,25)))
+                    {
+                        Debug.Log("Succed mine!");
+                    }
+                    else
+                    {
+                        Debug.Log("La mine se quedo vacia bruh");
+                        actualTargetMine = null;
+                        timer = timeUntilGoUrbanCenter;
+                    }
+                }
+            }
         }
         else
         {
@@ -247,18 +269,21 @@ public class Miner : MonoBehaviour
 
         if (minerPath.Any())
         {
-            foreach (Vector2Int position in minerPath)
+            if(minerPath != null)
             {
-                if(!minerBehaviour.IsEnable)
+                foreach (Vector2Int position in minerPath)
                 {
-                    yield break;
-                }
+                    if(!minerBehaviour.IsEnable)
+                    {
+                        yield break;
+                    }
 
-                while (Vector2.Distance(transform.position, position) > 0.15f)
-                {
-                    transform.position = Vector2.MoveTowards(transform.position, position, 1.15f * Time.deltaTime);
+                    while (Vector2.Distance(transform.position, position) > 0.15f)
+                    {
+                        transform.position = Vector2.MoveTowards(transform.position, position, 1.15f * Time.deltaTime);
 
-                    yield return new WaitForEndOfFrame();
+                        yield return new WaitForEndOfFrame();
+                    }
                 }
             }
         }

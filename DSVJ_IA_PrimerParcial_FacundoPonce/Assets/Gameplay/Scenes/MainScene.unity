@@ -836,7 +836,6 @@ MonoBehaviour:
   prefabTile: {fileID: 5433716689619696478, guid: c8ff593179d736946ae0c304b7716b8b, type: 3}
   mapSize: {x: 17, y: 17}
   allMap: []
-  mapView: []
 --- !u!1 &550557196
 GameObject:
   m_ObjectHideFlags: 0
@@ -2183,6 +2182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabMiner: {fileID: 3326257238952187091, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
   prefabMine: {fileID: 6901575899033605856, guid: 4e13cbb3748b65744b793e898801a832, type: 3}
+  amountOrePerMine: 1000
   nMinesAmount: 12
   mapHandler: {fileID: 524790613}
   uiController: {fileID: 1568691922}

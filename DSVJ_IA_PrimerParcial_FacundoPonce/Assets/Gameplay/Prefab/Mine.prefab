@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7627253191932847759}
   - component: {fileID: 7627253191932847752}
   - component: {fileID: 6901575899033605856}
+  - component: {fileID: 357210136895171867}
   m_Layer: 0
   m_Name: Mine
   m_TagString: Untagged
@@ -98,3 +99,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   amountOre: 10
+--- !u!58 &357210136895171867
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7627253191932847753}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
