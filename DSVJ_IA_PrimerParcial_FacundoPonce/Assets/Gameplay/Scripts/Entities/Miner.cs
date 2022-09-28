@@ -135,17 +135,20 @@ public class Miner : MonoBehaviour
             return;
         }
         //This will make the Thiessen calc to find the nearest mine, but for now i will do something easy.
-
-        Mine closestMine = allMinesOnMap[0];
-        float closestDistance = Vector2.Distance(transform.position, allMinesOnMap[0].GetMinePosition());
-        for (int i = 1; i < allMinesOnMap.Count; i++)
+        Mine closestMine = null;
+        if(allMinesOnMap.Count > 0)
         {
-            if (allMinesOnMap[i] != null)
+            closestMine = allMinesOnMap[0];
+            float closestDistance = Vector2.Distance(transform.position, allMinesOnMap[0].GetMinePosition());
+            for (int i = 1; i < allMinesOnMap.Count; i++)
             {
-                if(Vector2.Distance(transform.position, allMinesOnMap[i].GetMinePosition()) < closestDistance)
+                if (allMinesOnMap[i] != null && !allMinesOnMap[i].IsEmpty)
                 {
-                    closestMine = allMinesOnMap[i];
-                    closestDistance = Vector2.Distance(transform.position, allMinesOnMap[i].GetMinePosition());
+                    if(Vector2.Distance(transform.position, allMinesOnMap[i].GetMinePosition()) < closestDistance)
+                    {
+                        closestMine = allMinesOnMap[i];
+                        closestDistance = Vector2.Distance(transform.position, allMinesOnMap[i].GetMinePosition());
+                    }
                 }
             }
         }
@@ -157,8 +160,6 @@ public class Miner : MonoBehaviour
     #region MINER_BEHAVIOURS
     private void Idle()
     {
-        Debug.Log("Miner is Idle");
-
         minerAnim.SetBool("IsMining", false);
         minerAnim.SetBool("IsMoving", false);
     }
@@ -173,13 +174,13 @@ public class Miner : MonoBehaviour
         {
             timer += Time.deltaTime;
 
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,2f);
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 0.5f);
 
             foreach (Collider2D hit in hits)
             {
                 if(hit.TryGetComponent(out IMinable mine))
                 {
-                    if(mine.OnMine(UnityEngine.Random.Range(2,25)))
+                    if(mine.OnMine(UnityEngine.Random.Range(0,3)))
                     {
                         Debug.Log("Succed mine!");
                     }
@@ -187,9 +188,28 @@ public class Miner : MonoBehaviour
                     {
                         Debug.Log("La mine se quedo vacia bruh");
                         actualTargetMine = null;
-                        timer = timeUntilGoUrbanCenter;
+                        timer = 0;
+                        minerBehaviour.SetFlag((int)Flags.OnFullInventory);
+                        StopAllCoroutines();
                     }
                 }
+                else
+                {
+                    Debug.Log("La mine se quedo vacia bruh");
+                    timer = 0;
+                    actualTargetMine = null;
+                    minerBehaviour.SetFlag((int)Flags.OnFullInventory);
+                    StopAllCoroutines();
+                }
+            }
+
+            if (hits.Length < 1)
+            {
+                Debug.Log("La mine se quedo vacia bruh");
+                timer = 0;
+                actualTargetMine = null;
+                minerBehaviour.SetFlag((int)Flags.OnFullInventory);
+                StopAllCoroutines();
             }
         }
         else
@@ -214,15 +234,34 @@ public class Miner : MonoBehaviour
             minerPath.Clear();
         }
 
+        if(actualTargetMine != null)
+        {
+            actualTargetMine = actualTargetMine.IsEmpty ? null : actualTargetMine;
+        }
+
         FindClosestMine();
 
-        Debug.Log("GIVE ME A PATH");
-        minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), actualTargetMine.GetMinePosition());
+        if(actualTargetMine != null)
+        {
+            minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), actualTargetMine.GetMinePosition());
+        }
 
-        StartCoroutine(MoveMinerToDestination(() => 
+        StartCoroutine(MoveMinerToDestination((state) => 
         {
             minerBehaviour.SetFlag((int)Flags.OnReachMine);
         }));
+
+        UpdateAllMinesListState();
+    }
+
+    private void UpdateAllMinesListState()
+    {
+        List<Mine> toRemoveMines = allMinesOnMap.Where(mine => mine == null).ToList();
+
+        for (int i = 0; i < toRemoveMines.Count; i++)
+        {
+            allMinesOnMap.Remove(toRemoveMines[i]);
+        }
     }
 
     private void GoToUrbanCenter()
@@ -240,12 +279,18 @@ public class Miner : MonoBehaviour
             minerPath.Clear();
         }
 
-        Debug.Log("GIVE ME A PATH");
         minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), urbanCenter.attachedNode.GetCellPosition());
 
-        StartCoroutine(MoveMinerToDestination(() => 
+        StartCoroutine(MoveMinerToDestination((state) => 
         {
-            minerBehaviour.SetFlag((int)Flags.OnReachUrbanCenter);
+            if(state)
+            {
+                minerBehaviour.SetFlag((int)Flags.OnReachUrbanCenter);
+            }
+            else
+            {
+                minerBehaviour.SetFlag((int)Flags.OnEmpyMine);
+            }
         }));
     }
     #endregion
@@ -253,7 +298,7 @@ public class Miner : MonoBehaviour
     #endregion
 
     #region CORUTINES
-    IEnumerator MoveMinerToDestination(Action onReachDestination = null)
+    IEnumerator MoveMinerToDestination(Action<bool> onReachDestination = null)
     {
         if(minerPath == null)
         {
@@ -278,9 +323,16 @@ public class Miner : MonoBehaviour
                         yield break;
                     }
 
+                    if(actualTargetMine == null)
+                    {
+                        onReachDestination?.Invoke(allMinesOnMap.Count > 0);
+                        isGoingToTarget = false;
+                        yield break;
+                    }
+
                     while (Vector2.Distance(transform.position, position) > 0.15f)
                     {
-                        transform.position = Vector2.MoveTowards(transform.position, position, 1.15f * Time.deltaTime);
+                        transform.position = Vector2.MoveTowards(transform.position, position, (minerPath.Count *0.5f) * Time.deltaTime);
 
                         yield return new WaitForEndOfFrame();
                     }
@@ -288,7 +340,7 @@ public class Miner : MonoBehaviour
             }
         }
 
-        onReachDestination?.Invoke();
+        onReachDestination?.Invoke(allMinesOnMap.Count > 0);
         isGoingToTarget = false;
 
         yield break;
