@@ -9,12 +9,14 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         [SerializeField] private Vector2 start;
         [SerializeField] private Vector2 end;
         [SerializeField] private Vector2 middlePoint;
+        [SerializeField] private Vector2 normal;
         #endregion
 
         #region PROPERTIES
         public Vector2 Start { get { return start; } }
         public Vector2 End { get { return end; } }
         public Vector2 MiddlePoint { get { return middlePoint; } }
+        public Vector2 Normal { get { return normal; } }
         #endregion
 
         #region CONSTRUCTOR
@@ -24,6 +26,7 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
             this.end = end;
 
             GetMiddlePoint();
+            CalculateNormal();
         }
         #endregion
 
@@ -41,6 +44,12 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         private void GetMiddlePoint()
         {
             middlePoint = new Vector2((start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f);
+        }
+
+        private void CalculateNormal()
+        {
+            Vector2 direction = end - start;
+            normal = Vector2.Perpendicular(direction);
         }
         #endregion
     }

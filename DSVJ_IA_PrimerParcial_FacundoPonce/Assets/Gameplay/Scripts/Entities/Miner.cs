@@ -38,6 +38,7 @@ public class Miner : MonoBehaviour
     #region EXPOSED_FIELDS
     [SerializeField] private Animator minerAnim = null;
     [SerializeField] private List<Line> minesConnections = new List<Line>();
+    [SerializeField] private List<Line> mediatrices = new List<Line>();
     #endregion
 
     #region PRIVATE_FIELDS
@@ -130,6 +131,8 @@ public class Miner : MonoBehaviour
 
         minesConnections = new List<Line>();
 
+        SortMinesByY();
+
         for (int i = 0; i < allMinesOnMap.Count; i++)
         {
             if (allMinesOnMap[i] != null)
@@ -155,7 +158,24 @@ public class Miner : MonoBehaviour
                     }
                 }
             }
-        }                
+        }
+
+        mediatrices = new List<Line>();
+        for (int i = 0; i < minesConnections.Count; i++)
+        {
+            Vector2 middlePoint = minesConnections[i].MiddlePoint;
+
+            Line mediatrice = new Line(middlePoint, minesConnections[i].Normal);
+
+            if(!mediatrices.Contains(mediatrice))
+            {
+                mediatrices.Add(mediatrice);
+            }
+        }
+    }
+
+    private void SortMinesByY()
+    {
     }
 
     private void DrawVoronoi()
@@ -172,6 +192,17 @@ public class Miner : MonoBehaviour
                 Gizmos.color = Color.magenta;
 
                 Gizmos.DrawSphere(new Vector3(minesConnections[i].MiddlePoint.x, minesConnections[i].MiddlePoint.y, 0), 0.25f);
+            }
+        }
+
+        for (int i = 0; i < mediatrices.Count; i++)
+        {
+            if (mediatrices[i] != null)
+            {
+                Gizmos.color = Color.yellow;
+
+                Gizmos.DrawLine(new Vector3(mediatrices[i].Start.x, mediatrices[i].Start.y, 0),
+                        new Vector3(mediatrices[i].End.x, mediatrices[i].End.y, 0));
             }
         }
     }
