@@ -165,7 +165,7 @@ public class Miner : MonoBehaviour
         {
             Vector2 middlePoint = minesConnections[i].MiddlePoint;
 
-            Line mediatrice = new Line(middlePoint, minesConnections[i].Normal);
+            Line mediatrice = new Line(middlePoint, minesConnections[i].Direction);
 
             if(!mediatrices.Contains(mediatrice))
             {
@@ -176,6 +176,7 @@ public class Miner : MonoBehaviour
 
     private void SortMinesByY()
     {
+        
     }
 
     private void DrawVoronoi()

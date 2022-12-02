@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace PrimerParcial.Gameplay.Voronoi.Utils
@@ -9,14 +11,19 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         [SerializeField] private Vector2 start;
         [SerializeField] private Vector2 end;
         [SerializeField] private Vector2 middlePoint;
-        [SerializeField] private Vector2 normal;
+        [SerializeField] private Vector2 direction;
         #endregion
 
+        #region PRIVATE_FIELDS
+        public List<Vector2> middlePoints = new List<Vector2>();
+        #endregion
+        
         #region PROPERTIES
         public Vector2 Start { get { return start; } }
         public Vector2 End { get { return end; } }
         public Vector2 MiddlePoint { get { return middlePoint; } }
-        public Vector2 Normal { get { return normal; } }
+        public Vector2 Direction { get { return direction; } }
+        public List<Vector2> MiddlePoints { get { return  middlePoints; } }
         #endregion
 
         #region CONSTRUCTOR
@@ -26,7 +33,6 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
             this.end = end;
 
             GetMiddlePoint();
-            CalculateNormal();
         }
         #endregion
 
@@ -38,18 +44,18 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
 
             GetMiddlePoint();
         }
+        
+        public void Draw()
+        {
+            Gizmos.DrawLine(start, end);
+        }
         #endregion
 
         #region PRIVATE_METHODS
         private void GetMiddlePoint()
         {
             middlePoint = new Vector2((start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f);
-        }
-
-        private void CalculateNormal()
-        {
-            Vector2 direction = end - start;
-            normal = Vector2.Perpendicular(direction);
+            direction = Vector2.Perpendicular(new Vector2(end.x - start.x, end.y - start.y));
         }
         #endregion
     }

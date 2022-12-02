@@ -2094,6 +2094,7 @@ GameObject:
   - component: {fileID: 1896821576}
   - component: {fileID: 1896821575}
   - component: {fileID: 1896821577}
+  - component: {fileID: 1896821578}
   m_Layer: 0
   m_Name: UrbanCenterController
   m_TagString: Untagged
@@ -2183,9 +2184,21 @@ MonoBehaviour:
   prefabMiner: {fileID: 3326257238952187091, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
   prefabMine: {fileID: 6901575899033605856, guid: 4e13cbb3748b65744b793e898801a832, type: 3}
   amountOrePerMine: 10000
-  nMinesAmount: 3
+  nMinesAmount: 8
   mapHandler: {fileID: 524790613}
   uiController: {fileID: 1568691922}
+--- !u!114 &1896821578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896821574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af21da6b61e742c4e8042abccc4b7bc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1906799926
 GameObject:
   m_ObjectHideFlags: 0
