@@ -15,7 +15,7 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         #endregion
 
         #region PRIVATE_FIELDS
-        public List<Vector2> middlePoints = new List<Vector2>();
+        public List<Vector2> intersections = new List<Vector2>();
         #endregion
         
         #region PROPERTIES
@@ -23,7 +23,7 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         public Vector2 End { get { return end; } }
         public Vector2 MiddlePoint { get { return middlePoint; } }
         public Vector2 Direction { get { return direction; } }
-        public List<Vector2> MiddlePoints { get { return  middlePoints; } }
+        public List<Vector2> Intersections { get { return  intersections; } }
         #endregion
 
         #region CONSTRUCTOR

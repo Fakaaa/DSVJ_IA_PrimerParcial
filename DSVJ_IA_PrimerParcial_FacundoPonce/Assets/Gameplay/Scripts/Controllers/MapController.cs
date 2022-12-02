@@ -25,8 +25,8 @@ namespace PrimerParcial.Gameplay.Controllers
         #endregion
 
         #region PROPERTIES
-        public List<Node> WalkeableMap { get { return pathfinding.Map; } }  
-        public Vector2Int MapSize { get => mapSize; }
+        public List<Node> WalkeableMap { get { return pathfinding.Map; } }
+        public Vector2Int MapSize => mapSize;
         #endregion
 
         #region UNITY_CALLS
@@ -34,6 +34,7 @@ namespace PrimerParcial.Gameplay.Controllers
         {
             if (allMap == null)
                 return;
+            
             Gizmos.color = Color.green;
             GUIStyle style = new GUIStyle() { fontSize = 10 };
             foreach (Node node in allMap)

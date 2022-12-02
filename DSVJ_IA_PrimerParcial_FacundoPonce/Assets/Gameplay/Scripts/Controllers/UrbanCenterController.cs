@@ -1,9 +1,10 @@
 using System.Linq;
 using System.Collections.Generic;
-
+using PrimerParcial.Common.Map.Utils;
 using UnityEngine;
 
 using PrimerParcial.Gameplay.Entities;
+using PrimerParcial.Gameplay.Voronoi.Handler;
 using PrimerParcial.Gameplay.Controllers.View;
 
 namespace PrimerParcial.Gameplay.Controllers
@@ -17,6 +18,7 @@ namespace PrimerParcial.Gameplay.Controllers
         [SerializeField] private int nMinesAmount = 10;
         [SerializeField] private MapController mapHandler = default;
         [SerializeField] private UIController uiController = null;
+        [SerializeField] private VoronoiHandler voronoiHandler = null;
         #endregion
 
         #region PRIVATE_FIELDS
@@ -35,6 +37,9 @@ namespace PrimerParcial.Gameplay.Controllers
             Vector2Int urbanCenterPos = Vector2Int.RoundToInt(transform.position);
             
             mapHandler.Init(urbanCenterPos);
+            MapUtils.SetMapSize(mapHandler.MapSize);
+            
+            voronoiHandler.Initialize();
 
             uiController.ConfigureMinerOptions(CreateNewMiner, EnableAllMiners, RemoveMiner, ClearAllMiners);
             
@@ -65,8 +70,9 @@ namespace PrimerParcial.Gameplay.Controllers
                 {
                     mine.Init(mineNode, amountOrePerMine);
                     mines.Add(mine);
+                    voronoiHandler.ValidateVoronoi(mines);
                 }
-            } 
+            }
         }
 
         private void Update()

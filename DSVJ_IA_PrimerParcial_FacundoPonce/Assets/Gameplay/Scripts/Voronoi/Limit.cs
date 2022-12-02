@@ -12,23 +12,24 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         Size
     }
 
+    [System.Serializable]
     public class Limit
     {
         #region PRIVATE_FIELDS
-
         private Vector2 origin = default;
         private Direction direction = default;
-
         #endregion
 
+        #region PROPERTIES
+        public Vector2 Origin => origin;
+        #endregion
+        
         #region CONSTRUCTOR
-
         public Limit(Vector2 origin, Direction dir)
         {
             this.origin = origin;
             direction = dir;
         }
-
         #endregion
 
         #region PUBLIC_METHODS
@@ -57,6 +58,12 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
             }
 
             return pos;
+        }
+
+        public void DrawLimit(Vector2 destination, Color color)
+        {
+            Gizmos.color = color;
+            Gizmos.DrawLine(origin, destination);
         }
         #endregion
     }

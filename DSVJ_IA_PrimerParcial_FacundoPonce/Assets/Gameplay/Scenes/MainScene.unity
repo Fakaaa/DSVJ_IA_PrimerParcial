@@ -2184,9 +2184,10 @@ MonoBehaviour:
   prefabMiner: {fileID: 3326257238952187091, guid: fe769bac4af7a3c43897ab67eb65033a, type: 3}
   prefabMine: {fileID: 6901575899033605856, guid: 4e13cbb3748b65744b793e898801a832, type: 3}
   amountOrePerMine: 10000
-  nMinesAmount: 8
+  nMinesAmount: 4
   mapHandler: {fileID: 524790613}
   uiController: {fileID: 1568691922}
+  voronoiHandler: {fileID: 1896821578}
 --- !u!114 &1896821578
 MonoBehaviour:
   m_ObjectHideFlags: 0

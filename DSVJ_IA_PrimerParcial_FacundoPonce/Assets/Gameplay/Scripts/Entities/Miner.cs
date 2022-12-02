@@ -64,13 +64,6 @@ public class Miner : MonoBehaviour
     public Func<Vector2Int, Vector2Int ,List<Vector2Int>> OnGetPathOnMap { get { return onGetPathToMine; } set { onGetPathToMine = value; } }
     #endregion
 
-    #region UNITY_CALLS
-    private void OnDrawGizmos()
-    {
-        DrawVoronoi();
-    }
-    #endregion
-
     #region PUBLIC_METHODS
     public void Init(List<Mine> minesOnMap, UrbanCenter urbanCenter)
 	{
@@ -90,8 +83,6 @@ public class Miner : MonoBehaviour
         minerBehaviour = new AgentFSM((int)States._Count, (int)Flags._Count);
 
         InitializeMinerFSM();
-
-        CalculateVoronoi();
     }
 
     public void UpdateMiner()
@@ -120,94 +111,6 @@ public class Miner : MonoBehaviour
     #endregion
 
     #region PRIVATE_METHODS
-    private void CalculateVoronoi()
-    {
-        if(allMinesOnMap == null)
-        {
-            return;
-        }
-
-        Gizmos.color = Color.red;
-
-        minesConnections = new List<Line>();
-
-        SortMinesByY();
-
-        for (int i = 0; i < allMinesOnMap.Count; i++)
-        {
-            if (allMinesOnMap[i] != null)
-            {
-                Line newLine = null;
-
-                if (i + 1 < allMinesOnMap.Count)
-                {
-                    newLine = new Line(new Vector2(allMinesOnMap[i].Position.x, allMinesOnMap[i].Position.y), 
-                        new Vector2(allMinesOnMap[i + 1].Position.x, allMinesOnMap[i + 1].Position.y));
-                }
-                else
-                {
-                    newLine = new Line(new Vector2(allMinesOnMap[i].Position.x, allMinesOnMap[i].Position.y),
-                        new Vector2(allMinesOnMap[0].Position.x, allMinesOnMap[0].Position.y));
-                }
-                
-                if(newLine != null)
-                {
-                    if(!minesConnections.Contains(newLine))
-                    {
-                        minesConnections.Add(newLine);
-                    }
-                }
-            }
-        }
-
-        mediatrices = new List<Line>();
-        for (int i = 0; i < minesConnections.Count; i++)
-        {
-            Vector2 middlePoint = minesConnections[i].MiddlePoint;
-
-            Line mediatrice = new Line(middlePoint, minesConnections[i].Direction);
-
-            if(!mediatrices.Contains(mediatrice))
-            {
-                mediatrices.Add(mediatrice);
-            }
-        }
-    }
-
-    private void SortMinesByY()
-    {
-        
-    }
-
-    private void DrawVoronoi()
-    {
-        for (int i = 0; i < minesConnections.Count; i++)
-        {
-            if (minesConnections[i] != null)
-            {
-                Gizmos.color = Color.white;
-
-                Gizmos.DrawLine(new Vector3(minesConnections[i].Start.x, minesConnections[i].Start.y, 0),
-                        new Vector3(minesConnections[i].End.x, minesConnections[i].End.y, 0));
-
-                Gizmos.color = Color.magenta;
-
-                Gizmos.DrawSphere(new Vector3(minesConnections[i].MiddlePoint.x, minesConnections[i].MiddlePoint.y, 0), 0.25f);
-            }
-        }
-
-        for (int i = 0; i < mediatrices.Count; i++)
-        {
-            if (mediatrices[i] != null)
-            {
-                Gizmos.color = Color.yellow;
-
-                Gizmos.DrawLine(new Vector3(mediatrices[i].Start.x, mediatrices[i].Start.y, 0),
-                        new Vector3(mediatrices[i].End.x, mediatrices[i].End.y, 0));
-            }
-        }
-    }
-
     private void InitializeMinerFSM()
     {
         minerBehaviour.ForceCurretState((int)States.GoToMine);
