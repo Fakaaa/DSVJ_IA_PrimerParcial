@@ -19,6 +19,7 @@ public class Miner : MonoBehaviour
         Mining,
         GoToMine,
         GoToUrbanCenter,
+        GoToHide,
         Idle,
 
         _Count
@@ -30,6 +31,7 @@ public class Miner : MonoBehaviour
         OnReachMine,
         OnReachUrbanCenter,
         OnEmpyMine,
+        Alert,
 
         _Count
     }
@@ -45,21 +47,21 @@ public class Miner : MonoBehaviour
     private float timeUntilGoUrbanCenter = 4f;
     private float timer = 0f;
     private bool firstMovement = false;
-    private Vector2 lastMinePosition;
+    private bool isGoingToTarget = false;
+    private bool isOnShelter = false;
     
+    private Vector2 lastMinePosition;
     private AgentFSM minerBehaviour = null;
 
-    private bool isGoingToTarget = false;
-
     private UrbanCenter urbanCenter = null;
-
     private Mine actualTargetMine = null;
 
+    private Vector2 currentNodePosition = default;
     private List<Mine> allMinesOnMap = null;
-
     private List<Vector2> minerPath = new List<Vector2>();
 
     private Func<Vector2, Vector2 ,List<Vector2>> onGetPathToMine = null;
+    private Func<Vector2, Mine> onGetClosestMine = null;
     #endregion
 
     #region PROPERTIES
@@ -67,10 +69,11 @@ public class Miner : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(List<Mine> minesOnMap, UrbanCenter urbanCenter)
+    public void Init(List<Mine> minesOnMap, UrbanCenter urbanCenter, Func<Vector2,Mine> onGetClosestMine)
 	{
         this.urbanCenter = urbanCenter;
-
+        this.onGetClosestMine = onGetClosestMine;
+        
         if(minerPath != null)
         {
             minerPath.Clear();
@@ -85,8 +88,12 @@ public class Miner : MonoBehaviour
         minerBehaviour = new AgentFSM((int)States._Count, (int)Flags._Count);
 
         firstMovement = false;
+        isOnShelter = false;
         
         InitializeMinerFSM();
+        FindClosestMine();
+
+        currentNodePosition = transform.position;
     }
 
     public void UpdateMiner()
@@ -112,6 +119,28 @@ public class Miner : MonoBehaviour
 
         Destroy(gameObject, 0.15f);
     }
+
+    public void EscapeFromDanger()
+    {
+        if(minerBehaviour.GetCurrentState() == (int)States.GoToHide)
+            return;
+        
+        StopAllCoroutines();
+        isGoingToTarget = false;
+        firstMovement = true;
+
+        minerBehaviour.SetFlag((int)Flags.Alert);
+    }
+    
+    public void ContinueWork()
+    {
+        StopAllCoroutines();
+
+        isOnShelter = false;        
+        isGoingToTarget = false;
+
+        minerBehaviour.SetFlag((int)Flags.OnReachUrbanCenter);
+    }
     #endregion
 
     #region PRIVATE_METHODS
@@ -122,7 +151,14 @@ public class Miner : MonoBehaviour
         minerBehaviour.SetRelation((int)States.Mining, (int)Flags.OnFullInventory, (int)States.GoToUrbanCenter);
         minerBehaviour.SetRelation((int)States.GoToUrbanCenter, (int)Flags.OnReachUrbanCenter, (int)States.GoToMine);
         minerBehaviour.SetRelation((int)States.GoToUrbanCenter, (int)Flags.OnEmpyMine, (int)States.Idle);
-
+        
+        minerBehaviour.SetRelation((int)States.Idle, (int)Flags.Alert, (int)States.GoToHide);
+        minerBehaviour.SetRelation((int)States.Mining, (int)Flags.Alert, (int)States.GoToHide);
+        minerBehaviour.SetRelation((int)States.GoToMine, (int)Flags.Alert, (int)States.GoToHide);
+        minerBehaviour.SetRelation((int)States.GoToUrbanCenter, (int)Flags.Alert, (int)States.GoToHide);
+        
+        minerBehaviour.SetRelation((int)States.GoToHide, (int)Flags.OnReachUrbanCenter, (int)States.GoToMine);
+        
         ConfigureMinerBehaviours();
     }
 
@@ -132,6 +168,7 @@ public class Miner : MonoBehaviour
         minerBehaviour.AddBehaviour((int)States.Mining, Mining);
         minerBehaviour.AddBehaviour((int)States.GoToMine, GoToMine);
         minerBehaviour.AddBehaviour((int)States.GoToUrbanCenter, GoToUrbanCenter);
+        minerBehaviour.AddBehaviour((int)States.GoToHide, EscapeToUrbanCenter);
     }
 
     #region MINER_UTILS
@@ -141,24 +178,8 @@ public class Miner : MonoBehaviour
         {
             return;
         }
-        //This will make the Thiessen calc to find the nearest mine, but for now i will do something easy.
-        Mine closestMine = null;
-        if(allMinesOnMap.Count > 0)
-        {
-            closestMine = allMinesOnMap[0];
-            float closestDistance = Vector2.Distance(transform.position, allMinesOnMap[0].GetMinePosition());
-            for (int i = 1; i < allMinesOnMap.Count; i++)
-            {
-                if (allMinesOnMap[i] != null && !allMinesOnMap[i].IsEmpty)
-                {
-                    if(Vector2.Distance(transform.position, allMinesOnMap[i].GetMinePosition()) < closestDistance)
-                    {
-                        closestMine = allMinesOnMap[i];
-                        closestDistance = Vector2.Distance(transform.position, allMinesOnMap[i].GetMinePosition());
-                    }
-                }
-            }
-        }
+
+        Mine closestMine = onGetClosestMine?.Invoke(transform.position);
 
         actualTargetMine = closestMine;
     }
@@ -228,6 +249,11 @@ public class Miner : MonoBehaviour
 
     private void GoToMine()
     {
+        if (actualTargetMine == null && firstMovement)
+        {
+            return;
+        }
+
         if(isGoingToTarget)
         {
             return;
@@ -245,20 +271,18 @@ public class Miner : MonoBehaviour
         {
             actualTargetMine = actualTargetMine.IsEmpty ? null : actualTargetMine;
         }
-
-        FindClosestMine();
-
+        
         if(actualTargetMine != null)
         {
-            Vector2 minerPosition = transform.position;
-            Vector2 originPosition = default;
-
-            if (!firstMovement)
-                originPosition = minerPosition;
-            else
-                originPosition = urbanCenter.attachedNode.GetCellPosition();
+            //Vector2 minerPosition = transform.position;
+            //Vector2 originPosition = default;
+//
+            //if (!firstMovement)
+            //    originPosition = minerPosition;
+            //else
+            //    originPosition = urbanCenter.attachedNode.GetCellPosition();
             
-            minerPath = OnGetPathOnMap?.Invoke(originPosition, actualTargetMine.GetMinePosition());
+            minerPath = OnGetPathOnMap?.Invoke(currentNodePosition, actualTargetMine.GetMinePosition());
         }
 
         StartCoroutine(MoveMinerToDestination((state) =>
@@ -281,6 +305,33 @@ public class Miner : MonoBehaviour
         }
     }
 
+    private void EscapeToUrbanCenter()
+    {
+        if (isGoingToTarget || isOnShelter)
+        {
+            minerAnim.SetBool("IsMining", false);
+            minerAnim.SetBool("IsMoving", false);
+            return;
+        }
+        
+        minerAnim.SetBool("IsMining", false);
+        minerAnim.SetBool("IsMoving", true);
+
+        if (minerPath != null)
+        {
+            minerPath.Clear();
+        }
+
+        minerPath = OnGetPathOnMap?.Invoke(currentNodePosition, urbanCenter.attachedNode.GetCellPosition());
+        
+        StartCoroutine(MoveMinerToDestination((state) =>
+        {
+            isOnShelter = true;
+            currentNodePosition = urbanCenter.attachedNode.GetCellPosition();
+            minerBehaviour.SetFlag((int)Flags.OnEmpyMine);
+        }));
+    }
+    
     private void GoToUrbanCenter()
     {
         if(isGoingToTarget)
@@ -293,14 +344,15 @@ public class Miner : MonoBehaviour
 
         if (minerPath != null)
         {
+            
             minerPath.Clear();
         }
 
         minerPath = OnGetPathOnMap?.Invoke(lastMinePosition, urbanCenter.attachedNode.GetCellPosition());
-
-        StartCoroutine(MoveMinerToDestination((state) => 
+        
+        StartCoroutine(MoveMinerToDestination((state) =>
         {
-            if(state)
+            if (state)
             {
                 minerBehaviour.SetFlag((int)Flags.OnReachUrbanCenter);
             }
@@ -308,6 +360,8 @@ public class Miner : MonoBehaviour
             {
                 minerBehaviour.SetFlag((int)Flags.OnEmpyMine);
             }
+
+            FindClosestMine();
         }));
     }
     #endregion
@@ -329,38 +383,33 @@ public class Miner : MonoBehaviour
 
         isGoingToTarget = true;
 
+        
         if (minerPath.Any())
         {
-            if(minerPath != null)
+            currentNodePosition = minerPath[0];
+            
+            foreach (Vector2 position in minerPath)
             {
-                foreach (Vector2 position in minerPath)
+                if(!minerBehaviour.IsEnable)
                 {
-                    if(!minerBehaviour.IsEnable)
-                    {
-                        yield break;
-                    }
+                    yield break;
+                }
 
-                    if(actualTargetMine == null)
-                    {
-                        onReachDestination?.Invoke(allMinesOnMap.Count > 0);
-                        isGoingToTarget = false;
-                        yield break;
-                    }
+                currentNodePosition = position;
+                    
+                while (Vector2.Distance(transform.position, position) > 0.05f)
+                {
+                    transform.position = Vector2.MoveTowards(transform.position, position, (minerPath.Count *0.5f) * Time.deltaTime);
 
-                    while (Vector2.Distance(transform.position, position) > 0.15f)
-                    {
-                        transform.position = Vector2.MoveTowards(transform.position, position, (minerPath.Count *0.5f) * Time.deltaTime);
-
-                        yield return new WaitForEndOfFrame();
-                    }
+                    currentNodePosition = position;
+                        
+                    yield return new WaitForEndOfFrame();
                 }
             }
         }
 
         onReachDestination?.Invoke(allMinesOnMap.Count > 0);
         isGoingToTarget = false;
-
-        yield break;
     }
     #endregion
 }

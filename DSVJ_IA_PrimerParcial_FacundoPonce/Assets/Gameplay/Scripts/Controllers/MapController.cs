@@ -119,7 +119,7 @@ namespace PrimerParcial.Gameplay.Controllers
             Debug.Log("GIVE ME A PATH, MAP CONTROLLER");
 
             origin = new Vector2(Mathf.Abs(origin.x),Mathf.Abs( origin.y));
-
+            
             Node originNode = WalkeableMap.Find(node => node.GetCellPosition() == new Vector2(origin.x, origin.y));
             Node destinationNode = WalkeableMap.Find(node => node.GetCellPosition() == new Vector2(destination.x, destination.y));
 

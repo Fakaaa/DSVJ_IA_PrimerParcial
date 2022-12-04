@@ -36,12 +36,12 @@ namespace PrimerParcial.Gameplay.Controllers
             transform.position = new Vector3((mapHandler.MapSize.x * 0.5f), (mapHandler.MapSize.y * 0.5f), 0.0f);
             Vector2 urbanCenterPos = transform.position;
             
-            mapHandler.Init(urbanCenterPos);
+            mapHandler.Init(urbanCenterPos); 
             MapUtils.SetMapSize(mapHandler.MapSize);
-            
+             
             voronoiHandler.Initialize();
 
-            uiController.ConfigureMinerOptions(CreateNewMiner, EnableAllMiners, RemoveMiner, ClearAllMiners);
+            uiController.ConfigureMinerOptions(CreateNewMiner, EnableAllMiners, RemoveMiner, ClearAllMiners,SendAllMinersToUrbanCenter, SendAllMinersToWorkAgain);
             
             Node urbanCenterNode = mapHandler.GetMapCenterNode();
             transform.position = new Vector2(urbanCenterPos.x, urbanCenterPos.y);
@@ -112,7 +112,7 @@ namespace PrimerParcial.Gameplay.Controllers
             Miner newMiner = Instantiate(prefabMiner, new Vector2(whereSpawnMiner.GetCellPosition().x, whereSpawnMiner.GetCellPosition().y), Quaternion.identity);
 
             newMiner.OnGetPathOnMap += mapHandler.GetPath;
-            newMiner.Init(mines, urbanCenter);
+            newMiner.Init(mines, urbanCenter, voronoiHandler.GetClosestMine);
 
             allMiners.Add(newMiner);
         }
@@ -154,6 +154,28 @@ namespace PrimerParcial.Gameplay.Controllers
 
             allMiners.Clear();
         }
+
+        private void SendAllMinersToUrbanCenter()
+        {
+            for (int i = 0; i < allMiners.Count; i++)
+            {
+                if (allMiners[i] != null)
+                {
+                    allMiners[i].EscapeFromDanger();
+                }
+            }
+        }
+        
+        private void SendAllMinersToWorkAgain()
+        {
+            for (int i = 0; i < allMiners.Count; i++)
+            {
+                if (allMiners[i] != null)
+                {
+                    allMiners[i].ContinueWork();
+                }
+            }
+        }
         #endregion
     }
 
@@ -165,6 +187,7 @@ namespace PrimerParcial.Gameplay.Controllers
         public UrbanCenter(Node node)
         {
             attachedNode = node;
+            attachedNode.SetLocked(false);
         }
     }
 }

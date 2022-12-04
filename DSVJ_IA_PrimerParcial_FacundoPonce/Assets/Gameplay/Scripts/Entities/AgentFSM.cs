@@ -69,7 +69,6 @@ namespace PrimerParcial.Gameplay.Entities.Agent
 
         public void AddBehaviour(int state, Action behaviour)
         {
-
             if (behaviours.ContainsKey(state))
                 behaviours[state].Add(behaviour);
             else

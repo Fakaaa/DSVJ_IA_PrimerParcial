@@ -72,6 +72,25 @@ namespace PrimerParcial.Gameplay.Voronoi.Handler
                 }
             }
         }
+
+        public Mine GetClosestMine(Vector2 minerPosition)
+        {
+            Mine closestMine = null;
+            
+            for (int i = 0; i < zones.Count; i++)
+            {
+                if (zones[i] != null)
+                {
+                    if (zones[i].IsPointInZone(minerPosition))
+                    {
+                        closestMine = zones[i].MineInside;
+                        break;
+                    }
+                }
+            }
+
+            return closestMine;
+        }
         #endregion
 
         #region PRIVATE_METHODS

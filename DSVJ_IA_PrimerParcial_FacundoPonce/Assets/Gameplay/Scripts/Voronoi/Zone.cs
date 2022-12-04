@@ -122,10 +122,91 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
             SortIntersections();
             SetPointsInZone();
         }
+
+        public bool IsPointInZone(Vector2 point)
+        {
+            bool inside = false;
+
+            if (points == null) return false;
+
+            Vector2 endPoint = points[^1];
+            float endX = endPoint.x;
+            float endY = endPoint.y;
+
+            for (int i = 0; i < points.Length; i++)
+            {
+                float startX = endX; 
+                float startY = endY;
+
+                endPoint = points[i];
+
+                endX = endPoint.x; 
+                endY = endPoint.y;
+
+                inside ^= (endY > point.y ^ startY > point.y) && ((point.x - endX) < (point.y - endY) * (startX - endX) / (startY - endY));
+            }
+
+            return inside;
+            
+            //Vector3 p1, p2;
+            //bool inside = false;
+//
+            //if (points.Length < 3)
+            //{
+            //    return inside;
+            //}
+//
+            //Vector3 oldPoint = new Vector3(points[points.Length - 1].x, points[points.Length - 1].y);
+//
+            //for (int i = 0; i < points.Length; i++)
+            //{
+            //    var newPoint = new Vector3(points[i].x, points[i].y);
+//
+            //    if (newPoint.x > oldPoint.x)
+            //    {
+            //        p1 = oldPoint;
+            //        p2 = newPoint;
+            //    }
+            //    else
+            //    {
+            //        p1 = newPoint;
+            //        p2 = oldPoint;
+            //    }
+//
+            //    if ((newPoint.x < point.x) == (point.x <= oldPoint.x)
+            //        && (point.y - (long) p1.y)*(p2.x - p1.x)
+            //        < (p2.y - (long) p1.y)*(point.x - p1.x))
+            //    {
+            //        inside = !inside;
+            //    }
+//
+            //    oldPoint = newPoint;
+            //}
+//
+            //return inside;
+            
+            //bool inside = false;
+//
+            //int aux = points.Length - 1;
+            //for (int i = 0; i < points.Length; i++)
+            //{
+            //    if (points[i].y < point.y && points[aux].y >= point.y ||
+            //        points[aux].y < point.y && points[i].y >= point.y)
+            //    {
+            //        if (points[i].x + (point.y - points[i].y) / (points[aux].y - points[i].y) *
+            //            (points[aux].x - points[i].x) < point.x)
+            //        {
+            //            inside = !inside;
+            //        }
+            //    }
+            //    aux = i;
+            //}
+            //
+            //return inside;
+        }
         #endregion
 
         #region PRIVATE_METHODS
-
         private bool ValidateClosestPosition(Vector2 middlePoint, Vector2 pointEnd, float maxDistance)
         {
             float distance = Vector2.Distance(middlePoint, pointEnd);
