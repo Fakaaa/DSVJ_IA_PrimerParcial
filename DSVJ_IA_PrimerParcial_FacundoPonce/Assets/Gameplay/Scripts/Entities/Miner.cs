@@ -45,6 +45,7 @@ public class Miner : MonoBehaviour
     private float timeUntilGoUrbanCenter = 4f;
     private float timer = 0f;
     private bool firstMovement = false;
+    private Vector2 lastMinePosition;
     
     private AgentFSM minerBehaviour = null;
 
@@ -263,6 +264,7 @@ public class Miner : MonoBehaviour
         StartCoroutine(MoveMinerToDestination((state) =>
         {
             firstMovement = true;
+            lastMinePosition = actualTargetMine.Position;
             minerBehaviour.SetFlag((int)Flags.OnReachMine);
         }));
 
@@ -294,7 +296,7 @@ public class Miner : MonoBehaviour
             minerPath.Clear();
         }
 
-        minerPath = OnGetPathOnMap?.Invoke(actualTargetMine.GetMinePosition(), urbanCenter.attachedNode.GetCellPosition());
+        minerPath = OnGetPathOnMap?.Invoke(lastMinePosition, urbanCenter.attachedNode.GetCellPosition());
 
         StartCoroutine(MoveMinerToDestination((state) => 
         {
