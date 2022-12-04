@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using PrimerParcial.Common.Map.Utils;
 using PrimerParcial.Gameplay.Entities;
-
+using UnityEditor;
 using UnityEngine;
 
 namespace PrimerParcial.Gameplay.Voronoi.Utils
@@ -16,6 +16,8 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
         private List<Line> lines = null;
         private List<Vector2> intersections = null;
         private Vector3[] points;
+
+        private Color zoneColor = default;
         #endregion
 
         #region PROPERTIES
@@ -30,6 +32,9 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
 
             lines = new List<Line>();
             intersections = new List<Vector2>();
+
+            zoneColor = Random.ColorHSV();
+            zoneColor.a = 0.55f;
         }
 
         #endregion
@@ -54,6 +59,11 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
 
         public void DrawVoronoiZone()
         {
+            Handles.color = zoneColor;
+            Handles.DrawAAConvexPolygon(points);
+            
+            Handles.color = Color.black;
+            Handles.DrawPolyLine(points);
         }
 
         public void AddLineLimits(List<Limit> limits)
@@ -142,7 +152,7 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
                 if (middlePoints[i].Position.y < minY) minY = middlePoints[i].Position.y;
                 if (middlePoints[i].Position.y > maxY) maxY = middlePoints[i].Position.y;
             }
-
+            
             Vector2 center = new Vector2(minX + (maxX - minX) * 0.5f, minY + (maxY - minY) * 0.5f);
 
             for (int i = 0; i < middlePoints.Count; i++)
@@ -172,6 +182,14 @@ namespace PrimerParcial.Gameplay.Voronoi.Utils
 
             for (int i = 0; i < intersections.Count; i++)
             {
+                if (intersections[i].x == 0.5f) //If is on the limit of the map we need rest the offset of the limit to have a correct definition of zone.
+                {
+                    intersections[i] = new Vector2(-0.5f, intersections[i].y);
+                }
+                if (intersections[i].y == 0.5f)//This also affects the Y coordinate
+                {
+                    intersections[i] = new Vector2(intersections[i].x, -0.5f);
+                }
                 points[i] = new Vector3(intersections[i].x, intersections[i].y, 0f);
             }
 

@@ -44,7 +44,8 @@ public class Miner : MonoBehaviour
     #region PRIVATE_FIELDS
     private float timeUntilGoUrbanCenter = 4f;
     private float timer = 0f;
-
+    private bool firstMovement = false;
+    
     private AgentFSM minerBehaviour = null;
 
     private bool isGoingToTarget = false;
@@ -55,13 +56,13 @@ public class Miner : MonoBehaviour
 
     private List<Mine> allMinesOnMap = null;
 
-    private List<Vector2Int> minerPath = new List<Vector2Int>();
+    private List<Vector2> minerPath = new List<Vector2>();
 
-    private Func<Vector2Int, Vector2Int ,List<Vector2Int>> onGetPathToMine = null;
+    private Func<Vector2, Vector2 ,List<Vector2>> onGetPathToMine = null;
     #endregion
 
     #region PROPERTIES
-    public Func<Vector2Int, Vector2Int ,List<Vector2Int>> OnGetPathOnMap { get { return onGetPathToMine; } set { onGetPathToMine = value; } }
+    public Func<Vector2, Vector2 ,List<Vector2>> OnGetPathOnMap { get { return onGetPathToMine; } set { onGetPathToMine = value; } }
     #endregion
 
     #region PUBLIC_METHODS
@@ -75,13 +76,15 @@ public class Miner : MonoBehaviour
         }
         else
         {
-            minerPath = new List<Vector2Int>();
+            minerPath = new List<Vector2>();
         }
 
         allMinesOnMap = minesOnMap;
 
         minerBehaviour = new AgentFSM((int)States._Count, (int)Flags._Count);
 
+        firstMovement = false;
+        
         InitializeMinerFSM();
     }
 
@@ -246,11 +249,20 @@ public class Miner : MonoBehaviour
 
         if(actualTargetMine != null)
         {
-            minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), actualTargetMine.GetMinePosition());
+            Vector2 minerPosition = transform.position;
+            Vector2 originPosition = default;
+
+            if (!firstMovement)
+                originPosition = minerPosition;
+            else
+                originPosition = urbanCenter.attachedNode.GetCellPosition();
+            
+            minerPath = OnGetPathOnMap?.Invoke(originPosition, actualTargetMine.GetMinePosition());
         }
 
-        StartCoroutine(MoveMinerToDestination((state) => 
+        StartCoroutine(MoveMinerToDestination((state) =>
         {
+            firstMovement = true;
             minerBehaviour.SetFlag((int)Flags.OnReachMine);
         }));
 
@@ -282,7 +294,7 @@ public class Miner : MonoBehaviour
             minerPath.Clear();
         }
 
-        minerPath = OnGetPathOnMap?.Invoke(Vector2Int.RoundToInt(transform.position), urbanCenter.attachedNode.GetCellPosition());
+        minerPath = OnGetPathOnMap?.Invoke(actualTargetMine.GetMinePosition(), urbanCenter.attachedNode.GetCellPosition());
 
         StartCoroutine(MoveMinerToDestination((state) => 
         {
@@ -319,7 +331,7 @@ public class Miner : MonoBehaviour
         {
             if(minerPath != null)
             {
-                foreach (Vector2Int position in minerPath)
+                foreach (Vector2 position in minerPath)
                 {
                     if(!minerBehaviour.IsEnable)
                     {

@@ -22,7 +22,7 @@ namespace PrimerParcial.Gameplay.Controllers
         #endregion
 
         #region PRIVATE_FIELDS
-        private List<Vector2Int> selectedPositions = new List<Vector2Int>();
+        private List<Vector2> selectedPositions = new List<Vector2>();
         private List<Mine> mines = new List<Mine>();
 
         private List<Miner> allMiners = new List<Miner>();
@@ -34,7 +34,7 @@ namespace PrimerParcial.Gameplay.Controllers
         private void Start()
         {
             transform.position = new Vector3((mapHandler.MapSize.x * 0.5f), (mapHandler.MapSize.y * 0.5f), 0.0f);
-            Vector2Int urbanCenterPos = Vector2Int.RoundToInt(transform.position);
+            Vector2 urbanCenterPos = transform.position;
             
             mapHandler.Init(urbanCenterPos);
             MapUtils.SetMapSize(mapHandler.MapSize);
@@ -43,7 +43,7 @@ namespace PrimerParcial.Gameplay.Controllers
 
             uiController.ConfigureMinerOptions(CreateNewMiner, EnableAllMiners, RemoveMiner, ClearAllMiners);
             
-            Node urbanCenterNode = mapHandler.WalkeableMap.Find(node=> node.GetCellPosition() == urbanCenterPos);
+            Node urbanCenterNode = mapHandler.GetMapCenterNode();
             transform.position = new Vector2(urbanCenterPos.x, urbanCenterPos.y);
             urbanCenter = new UrbanCenter(urbanCenterNode);
 
@@ -51,7 +51,7 @@ namespace PrimerParcial.Gameplay.Controllers
 
             for (int i = 0; i < nMinesAmount; i++)
             {
-                Vector2Int randomPosition = default;
+                Vector2 randomPosition = default;
                 do
                 {
                     randomPosition = mapHandler.GetRandomMapPosition();
@@ -64,11 +64,11 @@ namespace PrimerParcial.Gameplay.Controllers
 
                 mineNode.SetLocked(false);
 
-                Mine mine = Instantiate(prefabMine, (Vector2)randomPosition, Quaternion.identity);
+                Mine mine = Instantiate(prefabMine, randomPosition, Quaternion.identity);
                 
                 if(!mines.Contains(mine))
                 {
-                    mine.Init(mineNode, amountOrePerMine);
+                    mine.Init(mineNode, amountOrePerMine, RevalidateVoronoi);
                     mines.Add(mine);
                     voronoiHandler.ValidateVoronoi(mines);
                 }
@@ -94,6 +94,15 @@ namespace PrimerParcial.Gameplay.Controllers
 
         #region PRIVATE_METHODS
 
+        private void RevalidateVoronoi(Mine mine)
+        {
+            if (mines.Contains(mine))
+            {
+                mines.Remove(mine);
+            }
+            voronoiHandler.ValidateVoronoi(mines);
+        }
+        
         private void CreateNewMiner()
         {
             int randomIndex = Random.Range(0, mapHandler.WalkeableMap.Count);

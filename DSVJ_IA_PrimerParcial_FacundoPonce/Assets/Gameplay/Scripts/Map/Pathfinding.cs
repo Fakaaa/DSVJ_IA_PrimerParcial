@@ -34,7 +34,7 @@ namespace PrimerParcial.Gameplay.Map.Handler
         #endregion
 
         #region PUBLIC_METHODS
-        public List<Vector2Int> GetPath(Vector2Int origin, Vector2Int destination)
+        public List<Vector2> GetPath(Vector2 origin, Vector2 destination)
         {
             bool originLocated = false;
             bool endLocated = false;
@@ -104,7 +104,7 @@ namespace PrimerParcial.Gameplay.Map.Handler
                         continue;
                     }
 
-                    int tentativeCost = actualNode.GCost + CalculateDistanceCost(actualNode, neighbourCell);
+                    float tentativeCost = actualNode.GCost + CalculateDistanceCost(actualNode, neighbourCell);
                     if(tentativeCost < neighbourCell.GCost)
                     {
                         neighbourCell.SetCameFromCell(actualNode);
@@ -125,14 +125,14 @@ namespace PrimerParcial.Gameplay.Map.Handler
         #endregion
 
         #region PRIVATE_METHODS
-        private int CalculateDistanceCost(Node actualNode, Node destination)
+        private float CalculateDistanceCost(Node actualNode, Node destination)
         {
             int diagonalCost = 14;
             int straightCost = 10;
             
-            int xDistance = Mathf.Abs(actualNode.GetCellPosition().x - destination.GetCellPosition().x);
-            int yDistance = Mathf.Abs(actualNode.GetCellPosition().y - destination.GetCellPosition().y);
-            int remaining = Mathf.Abs(xDistance - yDistance);
+            float xDistance = Mathf.Abs(actualNode.GetCellPosition().x - destination.GetCellPosition().x);
+            float yDistance = Mathf.Abs(actualNode.GetCellPosition().y - destination.GetCellPosition().y);
+            float remaining = Mathf.Abs(xDistance - yDistance);
 
             return diagonalCost * Mathf.Min(xDistance, yDistance) + straightCost * remaining;
         }
@@ -158,21 +158,21 @@ namespace PrimerParcial.Gameplay.Map.Handler
         {
             List<Node> neighboursList = new List<Node>();
 
-            int x = actualNode.GetCellPosition().x;
-            int y = actualNode.GetCellPosition().y;
+            float x = actualNode.GetCellPosition().x;
+            float y = actualNode.GetCellPosition().y;
 
             for (int i = 0; i < map.Count; i++)
             {
                 if (map[i] != null)
                 {
-                    if( map[i].GetCellPosition() == new Vector2Int(x -1, y)||
-                        map[i].GetCellPosition() == new Vector2Int(x - 1, y - 1)||
-                        map[i].GetCellPosition() == new Vector2Int(x - 1, y + 1)||
-                        map[i].GetCellPosition() == new Vector2Int(x + 1, y)||
-                        map[i].GetCellPosition() == new Vector2Int(x + 1, y - 1)||
-                        map[i].GetCellPosition() == new Vector2Int(x + 1, y + 1)||
-                        map[i].GetCellPosition() == new Vector2Int(x, y - 1)||
-                        map[i].GetCellPosition() == new Vector2Int(x, y + 1))
+                    if( map[i].GetCellPosition() == new Vector2(x -1, y)||
+                        map[i].GetCellPosition() == new Vector2(x - 1, y - 1)||
+                        map[i].GetCellPosition() == new Vector2(x - 1, y + 1)||
+                        map[i].GetCellPosition() == new Vector2(x + 1, y)||
+                        map[i].GetCellPosition() == new Vector2(x + 1, y - 1)||
+                        map[i].GetCellPosition() == new Vector2(x + 1, y + 1)||
+                        map[i].GetCellPosition() == new Vector2(x, y - 1)||
+                        map[i].GetCellPosition() == new Vector2(x, y + 1))
                     {
                         neighboursList.Add(map[i]);
                     }
@@ -182,9 +182,9 @@ namespace PrimerParcial.Gameplay.Map.Handler
             return neighboursList;
         }
 
-        private List<Vector2Int> CalculatePath(Node destinationNode)
+        private List<Vector2> CalculatePath(Node destinationNode)
         {
-            List<Vector2Int> path = new List<Vector2Int>();
+            List<Vector2> path = new List<Vector2>();
             path.Add(destinationNode.GetCellPosition());
             Node currentNode = destinationNode;
 

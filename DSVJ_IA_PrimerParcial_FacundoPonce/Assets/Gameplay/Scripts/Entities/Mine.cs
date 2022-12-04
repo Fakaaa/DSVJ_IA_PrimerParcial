@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 using PrimerParcial.Gameplay.Interfaces;
@@ -17,10 +18,11 @@ namespace PrimerParcial.Gameplay.Entities
         private float delayToTurnTxt = 5f;
         private float timer = 0f;
         private Node assignedNode = null;
+        private Action<Mine> onMineEmpty = null;
         #endregion
 
         #region PROPERTIES
-        public Vector2Int Position { get { return assignedNode.GetCellPosition(); } }
+        public Vector2 Position { get { return assignedNode.GetCellPosition(); } }
         public bool IsEmpty { get { return amountOre <= 0; } }
         #endregion
 
@@ -44,8 +46,9 @@ namespace PrimerParcial.Gameplay.Entities
         #endregion
 
         #region PUBLIC_METHODS
-        public void Init(Node assignedNode, int amountOre)
+        public void Init(Node assignedNode, int amountOre, Action<Mine> onMineEmpty)
         {
+            this.onMineEmpty = onMineEmpty;
             this.assignedNode = assignedNode;
 
             this.amountOre = amountOre;
@@ -59,7 +62,7 @@ namespace PrimerParcial.Gameplay.Entities
             }
         }
 
-        public Vector2Int GetMinePosition()
+        public Vector2 GetMinePosition()
         {
             return assignedNode.GetCellPosition();
         }
@@ -69,6 +72,7 @@ namespace PrimerParcial.Gameplay.Entities
             if (amountOre <= 0)
             {                
                 txtOreAmount.gameObject.SetActive(false);
+                onMineEmpty?.Invoke(this);
                 Destroy(gameObject);
                 return false;
             }

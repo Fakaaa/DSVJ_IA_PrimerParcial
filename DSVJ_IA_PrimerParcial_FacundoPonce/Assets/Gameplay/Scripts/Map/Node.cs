@@ -4,32 +4,35 @@ using UnityEngine;
 public class Node
 {
     #region PRIVATE_FIELDS
-    private Vector2Int cellPosition;
-    private int gCost;
-    private int hCost;
-    private int fCost;
+    private Vector2 cellPosition;
+    private float gCost;
+    private float hCost;
+    private float fCost;
     private Node cameFromNode;
+    private Vector2Int gridPosition = default;
 
     private bool isLocked = false; //This is like an obstacle.
     #endregion
 
     #region PROPERTIES
     public bool IsLocked { get { return isLocked; } }
-    public int GCost { get { return gCost; } }
-    public int HCost { get { return hCost; } }
-    public int FCost { get { return fCost; } }
+    public float GCost { get { return gCost; } }
+    public float HCost { get { return hCost; } }
+    public float FCost { get { return fCost; } }
+    public Vector2Int GridPosition => gridPosition;
     #endregion
 
     #region CONSTRUCTOR
-    public Node(Vector2Int cellPosition, bool isLocked = false)
+    public Node(Vector2 cellPosition, Vector2Int gridPosition ,bool isLocked = false)
     {
+        this.gridPosition = gridPosition;
         this.cellPosition = cellPosition;
         this.isLocked = isLocked;
     }
     #endregion
 
     #region PUBLIC_METHODS
-    public Vector2Int GetCellPosition()
+    public Vector2 GetCellPosition()
     {
         return cellPosition;
     }
@@ -39,12 +42,12 @@ public class Node
         this.isLocked = isLocked;
     }
 
-    public void SetGCost(int value)
+    public void SetGCost(float value)
     {
         gCost = value;
     }
 
-    public void SetHCost(int value)
+    public void SetHCost(float value)
     {
         hCost = value;
     }

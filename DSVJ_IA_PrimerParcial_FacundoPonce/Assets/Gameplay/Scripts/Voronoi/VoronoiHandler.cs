@@ -78,11 +78,14 @@ namespace PrimerParcial.Gameplay.Voronoi.Handler
         private void InitializeLimits()
         {
             limits = new List<Limit>();
+
+            Vector2 initialPosition = new Vector2(0f, 0f);
+            Vector2 offsetLimits = new Vector2(0.5f, 0.5f);
             
-            limits.Add(new Limit(new Vector2(-0.5f,-0.5f), Direction.LEFT));
-            limits.Add(new Limit(new Vector2(-0.5f, MapUtils.MapSize.y), Direction.UP));
-            limits.Add(new Limit(new Vector2(MapUtils.MapSize.x, MapUtils.MapSize.y), Direction.RIGHT));
-            limits.Add(new Limit(new Vector2(MapUtils.MapSize.x, -0.5f), Direction.DOWN));
+            limits.Add(new Limit(initialPosition - offsetLimits, Direction.LEFT));
+            limits.Add(new Limit(new Vector2(initialPosition.x - offsetLimits.x, MapUtils.MapSize.y + offsetLimits.y), Direction.UP));
+            limits.Add(new Limit(new Vector2(MapUtils.MapSize.x, MapUtils.MapSize.y) + offsetLimits, Direction.RIGHT));
+            limits.Add(new Limit(new Vector2(MapUtils.MapSize.x + offsetLimits.x, initialPosition.y - offsetLimits.y) , Direction.DOWN));
         }
         
         private void DrawThiessenDiagramme()
@@ -96,8 +99,8 @@ namespace PrimerParcial.Gameplay.Voronoi.Handler
             {
                 if (zones[i] != null)
                 {
-                    Gizmos.color = Color.cyan;
                     zones[i].DrawVoronoiZone();
+                    Gizmos.color = Color.green;
                     zones[i].DrawLines();
                 }
             }
