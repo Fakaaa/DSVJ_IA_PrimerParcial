@@ -112,7 +112,7 @@ namespace PrimerParcial.Gameplay.Controllers
             Miner newMiner = Instantiate(prefabMiner, new Vector2(whereSpawnMiner.GetCellPosition().x, whereSpawnMiner.GetCellPosition().y), Quaternion.identity);
 
             newMiner.OnGetPathOnMap += mapHandler.GetPath;
-            newMiner.Init(mines, urbanCenter, voronoiHandler.GetClosestMine);
+            newMiner.Init(mines, urbanCenter, voronoiHandler.GetClosestMine, SomeMineGoingToSameMine);
 
             allMiners.Add(newMiner);
         }
@@ -129,6 +129,20 @@ namespace PrimerParcial.Gameplay.Controllers
 
                 allMiners.Remove(firstMiner);
             }
+        }
+
+        private bool SomeMineGoingToSameMine(Miner miner)
+        {
+            bool minerNeedsFlocking = false;
+            for (int i = 0; i < allMiners.Count; i++)
+            {
+                if (allMiners[i].GoingToSameMine(miner))
+                {
+                    minerNeedsFlocking = true;
+                    break;
+                }
+            }
+            return minerNeedsFlocking;
         }
 
         private void EnableAllMiners()

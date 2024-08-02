@@ -11,6 +11,8 @@ using PrimerParcial.Gameplay.Controllers;
 using PrimerParcial.Gameplay.Interfaces;
 using PrimerParcial.Gameplay.Voronoi.Utils;
 
+using Projects.AI.Flocking;
+
 public class Miner : MonoBehaviour
 {
     #region ENUMS
@@ -39,6 +41,7 @@ public class Miner : MonoBehaviour
 
     #region EXPOSED_FIELDS
     [SerializeField] private Animator minerAnim = null;
+    [SerializeField] private Flocking flockingBehaviour = null;
     [SerializeField] private List<Line> minesConnections = new List<Line>();
     [SerializeField] private List<Line> mediatrices = new List<Line>();
     #endregion
@@ -62,19 +65,22 @@ public class Miner : MonoBehaviour
 
     private Func<Vector2, Vector2 ,List<Vector2>> onGetPathToMine = null;
     private Func<Vector2, Mine> onGetClosestMine = null;
+    private Func<Miner, bool> onGetSomeMinerGoingToSameMine = null;
     #endregion
 
     #region PROPERTIES
     public Func<Vector2, Vector2 ,List<Vector2>> OnGetPathOnMap { get { return onGetPathToMine; } set { onGetPathToMine = value; } }
+    public Mine ActualTargetMine { get => actualTargetMine; }
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(List<Mine> minesOnMap, UrbanCenter urbanCenter, Func<Vector2,Mine> onGetClosestMine)
+    public void Init(List<Mine> minesOnMap, UrbanCenter urbanCenter, Func<Vector2,Mine> onGetClosestMine, Func<Miner, bool> onGetSomeMinerGoingToSameMine)
 	{
         this.urbanCenter = urbanCenter;
         this.onGetClosestMine = onGetClosestMine;
-        
-        if(minerPath != null)
+        this.onGetSomeMinerGoingToSameMine = onGetSomeMinerGoingToSameMine;
+
+        if (minerPath != null)
         {
             minerPath.Clear();
         }
@@ -94,6 +100,11 @@ public class Miner : MonoBehaviour
         FindClosestMine();
 
         currentNodePosition = transform.position;
+    }
+
+    public bool GoingToSameMine(Miner miner)
+    {
+        return miner.ActualTargetMine == actualTargetMine;
     }
 
     public void UpdateMiner()
@@ -259,6 +270,16 @@ public class Miner : MonoBehaviour
             return;
         }
 
+        if (onGetSomeMinerGoingToSameMine.Invoke(this))
+        {
+            flockingBehaviour.gameObject.SetActive(true);
+            flockingBehaviour.SetTarget(transform);
+        }
+        else
+        {
+            flockingBehaviour.gameObject.SetActive(false);
+        }
+
         minerAnim.SetBool("IsMining", false);
         minerAnim.SetBool("IsMoving", true);
 
@@ -274,14 +295,6 @@ public class Miner : MonoBehaviour
         
         if(actualTargetMine != null)
         {
-            //Vector2 minerPosition = transform.position;
-            //Vector2 originPosition = default;
-//
-            //if (!firstMovement)
-            //    originPosition = minerPosition;
-            //else
-            //    originPosition = urbanCenter.attachedNode.GetCellPosition();
-            
             minerPath = OnGetPathOnMap?.Invoke(currentNodePosition, actualTargetMine.GetMinePosition());
         }
 
@@ -382,7 +395,6 @@ public class Miner : MonoBehaviour
         }
 
         isGoingToTarget = true;
-
         
         if (minerPath.Any())
         {
@@ -402,7 +414,6 @@ public class Miner : MonoBehaviour
                     transform.position = Vector2.MoveTowards(transform.position, position, (minerPath.Count *0.5f) * Time.deltaTime);
 
                     currentNodePosition = position;
-                        
                     yield return new WaitForEndOfFrame();
                 }
             }
